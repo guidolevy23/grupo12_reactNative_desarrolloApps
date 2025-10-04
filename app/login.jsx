@@ -1,7 +1,4 @@
-import React from "react";
-import { useState } from "react";
-
-
+import React, { useState } from "react";
 import { View, TextInput, Alert, StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 import authService from "../services/authService";

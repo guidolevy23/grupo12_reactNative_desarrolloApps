@@ -2,7 +2,7 @@ import axios from "axios";
 
 // ⚠️ Usá tu IP local en vez de localhost si vas a abrir desde Expo Web o Expo Go en celular.
 // Para verla: en Windows corré `ipconfig` y buscá tu IPv4 (ej: 192.168.0.146).
-const API_URL = "http://localhost:8080/otp"; 
+const API_URL = "exp://127.0.0.1:8081/otp"; 
 
 // 👉 Envía un OTP al email
 const sendOtp = async (email) => {
