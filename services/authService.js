@@ -1,20 +1,29 @@
 import axios from "axios";
 
-// ⚠️ Usá tu IP local en vez de localhost si vas a abrir desde Expo Web o Expo Go en celular.
-// Para verla: en Windows corré `ipconfig` y buscá tu IPv4 (ej: 192.168.0.146).
-const API_URL = "exp://127.0.0.1:8081/otp"; 
+const API_URL = "http://192.168.0.146:8080/api/auth";
 
-// 👉 Envía un OTP al email
-const sendOtp = async (email) => {
-  const res = await axios.post(`${API_URL}/request`, { email });
-  return res.data; // debería devolver "OTP sent to <email>"
+const authService = {
+  sendOtp: async (email) => {
+    try {
+      console.log("Enviando OTP a:", email);
+      const response = await axios.post(`${API_URL}/otp/request`, { email });
+      return response.data;
+    } catch (error) {
+      console.error("Error en sendOtp:", error);
+      throw error;
+    }
+  },
+
+  validateOtp: async (email, otp) => {
+    try {
+      console.log("Validando OTP:", otp);
+      const response = await axios.post(`${API_URL}/otp/validate`, { email, otp });
+      return response.data;
+    } catch (error) {
+      console.error("Error en validateOtp:", error);
+      throw error;
+    }
+  },
 };
 
-// 👉 Valida un OTP
-const verifyOtp = async (email, otp) => {
-  const res = await axios.post(`${API_URL}/validate`, { email, otp });
-  return res.data; 
-  // tu backend devuelve ResultDto: { status: "OK"/"ERROR", message: "..." }
-};
-
-export default { sendOtp, verifyOtp };
+export default authService;

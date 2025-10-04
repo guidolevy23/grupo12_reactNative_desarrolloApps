@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, Alert, StyleSheet, Text } from "react-native";
+import { View, Text, TextInput, Alert, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import authService from "../services/authService";
 import CustomButton from "../components/CustomButton";
@@ -8,18 +8,25 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const router = useRouter();
 
-  const sendOtp = async () => {
-    try {
-      if (!email.includes("@")) {
-        Alert.alert("Error", "Ingresá un email válido");
-        return;
-      }
-      await authService.sendOtp(email);
-      router.push({ pathname: "/otp", params: { email } });
-    } catch (error) {
-      Alert.alert("Error", "No se pudo enviar el código");
+const handleSendOtp = async () => {
+  console.log("Botón presionado con email:", email);
+  Alert.alert("Intentando enviar código...");
+
+  try {
+    if (!email.includes("@")) {
+      Alert.alert("Error", "Ingresá un email válido");
+      return;
     }
-  };
+
+    const response = await authService.sendOtp(email);
+    Alert.alert("Éxito", response);
+    router.push({ pathname: "/otp", params: { email } });
+  } catch (error) {
+    console.error("Error:", error);
+    Alert.alert("Error", "No se pudo enviar el código. Verificá el backend.");
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -31,13 +38,19 @@ export default function LoginScreen() {
         value={email}
         onChangeText={setEmail}
       />
-      <CustomButton title="Enviar código" onPress={sendOtp} />
+      <CustomButton title="Enviar código" onPress={handleSendOtp} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center", padding: 20 },
-  input: { borderWidth: 1, marginBottom: 20, padding: 12, borderRadius: 5 },
-  title: { fontSize: 22, fontWeight: "bold", textAlign: "center", marginBottom: 40 },
+  title: { fontSize: 24, textAlign: "center", marginBottom: 30, fontWeight: "bold" },
+  input: {
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 20,
+    borderRadius: 6,
+    borderColor: "#ccc",
+  },
 });
