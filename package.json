@@ -1,7 +1,9 @@
 {
   "main": "App.js",
   "scripts": {
-    "start": "expo start -c"
+    "start": "expo start -c",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
@@ -16,5 +18,7 @@
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
     "react-native-web": "^0.19.10"
-  }
+  },
+  "name": "grupo12_reactNative_desarrolloApps",
+  "version": "1.0.0"
 }
