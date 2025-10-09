@@ -14,16 +14,27 @@ const authService = {
     }
   },
 
-  validateOtp: async (email, otp) => {
-    try {
-      console.log("Validando OTP:", otp);
-      const response = await axios.post(`${API_URL}/otp/validate`, { email, otp });
-      return response.data;
-    } catch (error) {
-      console.error("Error en validateOtp:", error);
-      throw error;
+validateOtp: async (email, otp) => {
+  try {
+    console.log("Validando OTP:", otp, "para:", email);
+    const response = await axios.post(`${API_URL}/otp/validate`, { email, otp });
+    return response.data;
+  } catch (error) {
+    console.error("Error en validateOtp:", error.message);
+
+    if (error.response) {
+      console.log("📩 Respuesta del backend:");
+      console.log("Status:", error.response.status);
+      console.log("Data:", error.response.data);
+    } else if (error.request) {
+      console.log("📡 No hubo respuesta del servidor. Request:", error.request);
+    } else {
+      console.log("❌ Error al configurar la solicitud:", error.message);
     }
-  },
-};
+
+    throw error;
+  }
+},
+}
 
 export default authService;
