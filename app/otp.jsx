@@ -16,7 +16,7 @@ export default function OtpScreen() {
       setMessage(result.message);
       if (result.status === "OK") {
         // 🔁 Redirigir al home (o login, lo que quieras)
-        router.push("/home");
+        router.push("/");
       }
     } catch (error) {
       setMessage("Error al validar OTP");
