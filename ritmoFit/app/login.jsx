@@ -1,82 +1,78 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Alert, StyleSheet, Pressable } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import authService from "../services/authService";
-import CustomButton from "../components/CustomButton";
 
-export default function LoginScreen() {
+
+export default function Login() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleSendOtp = async () => {
-    console.log("Botón presionado con email:", email);
-    Alert.alert("Intentando enviar código...");
 
-    try {
-      if (!email.includes("@")) {
-        Alert.alert("Error", "Ingresá un email válido");
-        return;
-      }
 
-      const response = await authService.sendOtp(email);
-      Alert.alert("Éxito", response?.message || "Código enviado correctamente");
-      router.push({ pathname: "/otp", params: { email } });
-    } catch (error) {
-      console.error("Error:", error);
-      Alert.alert("Error", "No se pudo enviar el código. Verificá el backend.");
+
+  const handleLogin = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: email,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      Alert.alert("Error", "No se pudo iniciar sesión.");
+      return;
     }
-  };
+
+    if (data.token) {
+      await AsyncStorage.setItem("token", data.token);
+      Alert.alert("Bienvenido", "Inicio de sesión exitoso");
+      router.replace("/home"); // ✅ redirige al Home
+    } else {
+      Alert.alert("Error", "Respuesta inesperada del servidor.");
+    }
+  } catch (err) {
+    console.error(err);
+    Alert.alert("Error de red", "Verificá que el backend esté corriendo.");
+  }
+};
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>RitmoFit 🏋️‍♂️</Text>
-
+      <Text style={styles.title}>Iniciar sesión</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ingresá tu email"
-        keyboardType="email-address"
+        placeholder="Correo electrónico"
         value={email}
         onChangeText={setEmail}
       />
-
-      <CustomButton title="Enviar código" onPress={handleSendOtp} />
-
-      <Pressable style={styles.registerButton} onPress={() => router.push("/register")}>
-        <Text style={styles.registerText}>Crear cuenta</Text>
-      </Pressable>
+      <TextInput
+        style={styles.input}
+        placeholder="Contraseña"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <Button title="Ingresar" onPress={handleLogin} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: "center", 
-    alignItems: "center", 
-    padding: 20,
-    backgroundColor: "#fff"
-  },
-  title: { 
-    fontSize: 24, 
-    textAlign: "center", 
-    marginBottom: 30, 
-    fontWeight: "bold" 
-  },
+  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 20 },
   input: {
     width: "100%",
     borderWidth: 1,
-    padding: 12,
-    marginBottom: 20,
-    borderRadius: 8,
     borderColor: "#ccc",
-  },
-  registerButton: {
-    marginTop: 10,
+    borderRadius: 8,
     padding: 10,
-  },
-  registerText: {
-    color: "#007AFF",
-    fontSize: 16,
-    fontWeight: "500",
+    marginBottom: 15,
   },
 });
