@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet } from "react-native";
-import authService from "../services/authService";
+import authService from "../../../services/authService";
 
 export default function Register({ navigation }) {
   const [username, setUsername] = useState("");

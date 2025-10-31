@@ -1,5 +1,6 @@
 // app/profile.jsx
 import React, { useEffect, useState } from "react";
+import { BASE_URL, apiFetch } from "../utils/api";
 import {
   View,
   Text,
@@ -27,12 +28,19 @@ export default function Profile() {
           return;
         }
 
-        const res = await fetch("http://localhost:8080/api/users/me", {
+        const res = await fetch(`${BASE_URL}/users/me`, {
+          method: "GET",
           headers: { Authorization: `Bearer ${token}` },
+
         });
+
+
+        console.log("🔑 Token enviado:", token);
+
 
         if (!res.ok) throw new Error("Error al obtener perfil");
 
+        
         const data = await res.json();
         setUser(data);
       } catch (e) {
@@ -62,14 +70,14 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      {user.photoUrl ? (
+      {/* { {user.photoUrl ? (
         <Image source={{ uri: user.photoUrl }} style={styles.avatar} />
       ) : (
         <Image
           source={require("../assets/default-avatar.png")}
           style={styles.avatar}
         />
-      )}
+      )} */}
       <Text style={styles.name}>{user.name}</Text>
       <Text style={styles.email}>{user.email}</Text>
       <Text style={styles.role}>Rol: {user.role}</Text>

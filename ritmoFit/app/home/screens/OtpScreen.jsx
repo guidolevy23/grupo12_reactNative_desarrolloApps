@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, TextInput, Button, Text } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import authService from "../services/authService";
+import authService from "../../../services/authService";
 
 export default function OtpScreen() {
   const { email } = useLocalSearchParams();
@@ -15,7 +15,8 @@ export default function OtpScreen() {
       const result = await authService.validateOtp(email, otp);
       setMessage(result.message);
       if (result.status === "OK") {
-        router.replace("/(tabs)");
+        // 🔁 Redirigir al home (o login, lo que quieras)
+        router.push("/");
       }
     } catch (error) {
       setMessage("Error al validar OTP");
@@ -23,7 +24,7 @@ export default function OtpScreen() {
   };
 
   return (
-    <View style={{ flex: 1, padding: 20, justifyContent: "center", backgroundColor: "#fff" }}>
+    <View style={{ padding: 20 }}>
       <Text style={{ fontSize: 22, marginBottom: 10 }}>Ingrese el código OTP</Text>
       <TextInput
         placeholder="Código"
@@ -35,7 +36,6 @@ export default function OtpScreen() {
           borderColor: "#ccc",
           padding: 10,
           marginBottom: 10,
-          borderRadius: 8,
         }}
       />
       <Button title="Validar código" onPress={handleValidateOtp} />
@@ -43,4 +43,3 @@ export default function OtpScreen() {
     </View>
   );
 }
-

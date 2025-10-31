@@ -1,33 +1,48 @@
-import { useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
-import { View, Text, StyleSheet } from "react-native";
+import { View, ActivityIndicator, Text } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Index() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkLogin = async () => {
-      const token = await AsyncStorage.getItem("token");
-      if (token) {
-        router.replace("/home"); // ✅ redirige automáticamente
+    const checkAuth = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (token) {
+          router.replace("/(tabs)");
+        } else {
+          router.replace("/login");
+        }
+      } catch (error) {
+        console.error("Error checking auth:", error);
+        router.replace("/login");
+      } finally {
+        setLoading(false);
       }
     };
-    checkLogin();
+
+    checkAuth();
   }, []);
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido a RitmoFit 🏋️‍♂️</Text>
-      <Text style={styles.subtitle}>
-        Iniciá sesión para reservar tus clases.
-      </Text>
-    </View>
-  );
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <ActivityIndicator size="large" color="#e67e22" />
+        <Text style={{ marginTop: 10, color: "#555" }}>Cargando...</Text>
+      </View>
+    );
+  }
+
+  return null;
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center" },
-  title: { fontSize: 22, fontWeight: "bold" },
-  subtitle: { color: "#555", marginTop: 10 },
-});
