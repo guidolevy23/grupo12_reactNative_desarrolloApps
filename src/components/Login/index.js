@@ -1,11 +1,11 @@
 import React, { useState, useContext } from "react";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import {
-  View,
   Text,
   TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+  TouchableRipple,
+  useTheme,
+} from "react-native-paper";
 import { AuthContext } from "../../context/AuthContext";
 import { saveToken } from "../../utils/tokenStorage";
 
@@ -13,8 +13,9 @@ const Login = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useContext(AuthContext);
+  const theme = useTheme();
 
-  const handleLogin = async () => {    
+  const handleLogin = async () => {
     const fakeToken = `fake-token-${Date.now()}`;
     saveToken(fakeToken);
     await login();
@@ -42,9 +43,9 @@ const Login = ({ navigation }) => {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <TouchableRipple style={[styles.button, { backgroundColor: theme.colors.primary }]} onPress={handleLogin}>
           <Text style={styles.buttonText}>Ingresar</Text>
-        </TouchableOpacity>
+        </TouchableRipple>
       </View>
     </View>
   );
