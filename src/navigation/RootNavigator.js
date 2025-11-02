@@ -17,7 +17,7 @@ const RootNavigator = () => {
       }}
     >
       {!isAuthenticated ? (
-        <Stack.Screen name="Login" component={LoginNavigator} />
+        <Stack.Screen name="LoginPage" component={LoginNavigator} />
       ) : (
         <Stack.Screen name="MainTabs" component={TabNavigator} />
       )}

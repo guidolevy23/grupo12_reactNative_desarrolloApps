@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { Button, Text } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 
-export default function Otp() {
+export default function OtpScreen() {
 
   const navigation = useNavigation();
 

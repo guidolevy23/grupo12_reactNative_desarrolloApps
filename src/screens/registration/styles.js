@@ -13,6 +13,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
+  button: {
+    marginTop: 16,
+  },
 });
 
 export default styles;

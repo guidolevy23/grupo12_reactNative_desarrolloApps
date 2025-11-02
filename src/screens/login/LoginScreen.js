@@ -15,10 +15,10 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>RitmoFit</Text>
       <LoginForm />
       <Button style={styles.button} onPress={navigateToRegistration}>
-        Don't have an account? Register
+        ¿No tienes una cuenta? Regístrate
       </Button>
     </View>
   );
