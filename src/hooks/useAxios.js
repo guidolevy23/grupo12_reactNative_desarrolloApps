@@ -2,7 +2,7 @@ import { useContext, useMemo } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { getToken } from "../utils/tokenStorage";
 import axios from "axios";
-import { ALWAYS } from "expo-secure-store";
+
 
 export const useAxios = () => {
   const { logout } = useContext(AuthContext);

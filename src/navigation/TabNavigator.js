@@ -1,32 +1,9 @@
-import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
-import Home from "../components/Home";
-import Profile from "../components/Profile";
-import Detail from "../components/Detail";
-import SafeAreaExample from "../components/SafeAreaExample/SafeAreaExample";
-import PaperExample from "../components/PaperExample/PaperExample";
-import ThemeExample from "../components/ThemeExample/ThemeExample";
+
+import HomeScreen from "../screens/home/HomeScreen";
+import ProfileScreen from "../screens/profile/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
-const Stack = createStackNavigator();
-
-const HomeStack = () => {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen
-        name="HomeList"
-        component={Home}
-        options={{ title: "Pokémon List" }}
-      />
-      <Stack.Screen
-        name="Detail"
-        component={Detail}
-        options={{ title: "Detalles del Pokémon" }}
-      />
-    </Stack.Navigator>
-  );
-};
 
 const TabNavigator = () => {
   return (
@@ -38,29 +15,14 @@ const TabNavigator = () => {
       }}
     >
       <Tab.Screen
-        name="Home"
-        component={HomeStack}
-        options={{ tabBarLabel: "Pokémon" }}
+        name="HomeScreen"
+        component={HomeScreen}
+        options={{ tabBarLabel: "Home" }}
       />
       <Tab.Screen
-        name="Profile"
-        component={Profile}
+        name="ProfileScreen"
+        component={ProfileScreen}
         options={{ tabBarLabel: "Perfil" }}
-      />
-      <Tab.Screen
-        name="SafeArea"
-        component={SafeAreaExample}
-        options={{ tabBarLabel: "Safe Area" }}
-      />
-      <Tab.Screen
-        name="Paper"
-        component={PaperExample}
-        options={{ tabBarLabel: "Paper" }}
-      />
-      <Tab.Screen
-        name="Theme"
-        component={ThemeExample}
-        options={{ tabBarLabel: "Tema" }}
       />
     </Tab.Navigator>
   );
