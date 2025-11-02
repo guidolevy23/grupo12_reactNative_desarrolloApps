@@ -1,8 +1,8 @@
 import { createStackNavigator } from "@react-navigation/stack";
 
 import LoginScreen from "../screens/login/LoginScreen";
-import Otp from "../screens/login/Otp";
-import RegistrationScreen from "../screens/registration/RegistrationScreen";
+import OtpScreen from "../screens/login/OtpScreen";
+import RegistrationScreen from "../screens/login/RegistrationScreen";
 
 const Stack = createStackNavigator();
 
@@ -19,8 +19,7 @@ const LoginNavigator = () => {
       />
       <Stack.Screen
         name="Otp"
-        component={Otp}
-        options={{ title: "OTP", headerShown: true }}
+        component={OtpScreen}
       />
       <Stack.Screen
         name="Registration"

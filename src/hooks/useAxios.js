@@ -8,7 +8,7 @@ export const useAxios = () => {
   const { logout } = useContext(AuthContext);
 
   const instance = useMemo(() => {
-    const axiosInstance = axios.create({ baseURL: "https://api.com" });
+    const axiosInstance = axios.create({ baseURL: "http://localhost:8080" });
 
     axiosInstance.interceptors.request.use(async (config) => {
       const token = await getToken();

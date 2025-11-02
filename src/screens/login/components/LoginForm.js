@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View } from 'react-native';
 import { TextInput, Button, HelperText } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { AuthContext } from '../../../context/AuthContext';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
-  const navigation = useNavigation();
+  const { login } = useContext(AuthContext);
 
   const validate = () => {
     const newErrors = {};
@@ -26,9 +26,8 @@ const LoginForm = () => {
   const handleSubmit = () => {
     const newErrors = validate();
     if (Object.keys(newErrors).length === 0) {
-      // Handle successful login
+      login()
       console.log('Logged in');
-      navigation.navigate('Otp');
     } else {
       setErrors(newErrors);
     }

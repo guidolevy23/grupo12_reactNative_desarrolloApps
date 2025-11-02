@@ -6,7 +6,6 @@ import { useNavigation } from '@react-navigation/native';
 
 const RegistrationForm = () => {
   const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -17,9 +16,6 @@ const RegistrationForm = () => {
     const newErrors = {};
     if (!firstName) {
       newErrors.firstName = 'First name is required';
-    }
-    if (!lastName) {
-      newErrors.lastName = 'Last name is required';
     }
     if (!email) {
       newErrors.email = 'Email is required';
@@ -56,15 +52,6 @@ const RegistrationForm = () => {
       />
       <HelperText type="error" visible={!!errors.firstName}>
         {errors.firstName}
-      </HelperText>
-      <TextInput
-        label="Last Name"
-        value={lastName}
-        onChangeText={setLastName}
-        error={!!errors.lastName}
-      />
-      <HelperText type="error" visible={!!errors.lastName}>
-        {errors.lastName}
       </HelperText>
       <TextInput
         label="Email"
