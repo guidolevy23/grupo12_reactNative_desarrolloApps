@@ -76,7 +76,8 @@ export default function HomeScreen() {
   };
 
   const renderClassItem = ({ item }) => {
-    const availableSpots = (item.capacidad || 20) - (item.ocupados || 0);
+    // Simplificado: solo mostrar info básica sin mucho procesamiento
+    const availableSpots = (item.capacidad || item.capacity || 20) - (item.ocupados || item.currentEnrollment || 0);
     const isAlmostFull = availableSpots <= 5;
 
     return (
@@ -100,7 +101,7 @@ export default function HomeScreen() {
 
         <View style={styles.cardBody}>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>🏢 {item.sede || item.location}</Text>
+            <Text style={styles.infoLabel}>🏢 {item.sede || item.branch || item.location}</Text>
           </View>
 
           <View style={styles.infoRow}>
@@ -109,9 +110,9 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {item.instructor && (
+          {(item.instructor || item.professor) && (
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>👤 {item.instructor}</Text>
+              <Text style={styles.infoLabel}>👤 {item.instructor || item.professor}</Text>
             </View>
           )}
 

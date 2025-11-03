@@ -85,44 +85,64 @@ const ClassDetailScreen = ({ route }) => {
     return null;
   }
 
+  // Formatear fecha/hora
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return "Por confirmar";
+    try {
+      const date = new Date(dateStr);
+      const dateFormatted = date.toLocaleDateString('es-AR', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      const time = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+      return `${dateFormatted} - ${time}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
+  const availableSpots = (classData.capacity || 20) - (classData.currentEnrollment || 0);
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.className}>{classData.nombre || classData.name}</Text>
-        <Text style={styles.type}>{classData.tipo || classData.type}</Text>
+        <Text style={styles.className}>{classData.name}</Text>
+        <Text style={styles.type}>{classData.name?.split(' ')[0] || 'Clase'}</Text>
 
         <View style={styles.infoSection}>
           <View style={styles.infoRow}>
             <Text style={styles.label}>🏢 Sede:</Text>
-            <Text style={styles.value}>{classData.sede || classData.location}</Text>
+            <Text style={styles.value}>{classData.branch || 'Sede Principal'}</Text>
           </View>
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>⏰ Horario:</Text>
-            <Text style={styles.value}>{classData.horario || classData.schedule}</Text>
+            <Text style={styles.value}>{formatDateTime(classData.startsAt)}</Text>
           </View>
 
           <View style={styles.infoRow}>
-            <Text style={styles.label}>👤 Instructor:</Text>
-            <Text style={styles.value}>{classData.instructor || "Por asignar"}</Text>
+            <Text style={styles.label}>👤 Profesor:</Text>
+            <Text style={styles.value}>{classData.professor || "Por asignar"}</Text>
           </View>
 
           <View style={styles.infoRow}>
             <Text style={styles.label}>⏱️ Duración:</Text>
-            <Text style={styles.value}>{classData.duracion || classData.duration || "60 min"}</Text>
+            <Text style={styles.value}>{classData.duration || "60 min"}</Text>
           </View>
 
           <View style={styles.infoRow}>
-            <Text style={styles.label}>👥 Capacidad:</Text>
+            <Text style={styles.label}>👥 Lugares disponibles:</Text>
             <Text style={styles.value}>
-              {classData.ocupados || 0} / {classData.capacidad || classData.capacity || 20}
+              {availableSpots > 0 ? `${availableSpots} lugares` : 'Clase llena'}
             </Text>
           </View>
 
-          {classData.descripcion && (
+          {classData.description && (
             <View style={styles.descriptionContainer}>
               <Text style={styles.label}>📝 Descripción:</Text>
-              <Text style={styles.description}>{classData.descripcion}</Text>
+              <Text style={styles.description}>{classData.description}</Text>
             </View>
           )}
         </View>
