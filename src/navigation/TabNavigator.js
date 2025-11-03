@@ -1,28 +1,79 @@
+import React from "react";
+import { Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createStackNavigator } from "@react-navigation/stack";
 
 import HomeScreen from "../screens/home/HomeScreen";
+import ClassDetailScreen from "../screens/home/ClassDetailScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
+
+// Stack Navigator para Home (incluye la lista y el detalle)
+const HomeStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="HomeList"
+        component={HomeScreen}
+        options={{ 
+          title: "Clases RitmoFit",
+          headerStyle: {
+            backgroundColor: "#667eea",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      />
+      <Stack.Screen
+        name="ClassDetail"
+        component={ClassDetailScreen}
+        options={{ 
+          title: "Detalle de Clase",
+          headerStyle: {
+            backgroundColor: "#667eea",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
 
 const TabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: "#E63F34",
+        tabBarActiveTintColor: "#667eea",
         tabBarInactiveTintColor: "#666",
         headerShown: false,
       }}
     >
       <Tab.Screen
-        name="HomeScreen"
-        component={HomeScreen}
-        options={{ tabBarLabel: "Home" }}
+        name="Home"
+        component={HomeStack}
+        options={{ 
+          tabBarLabel: "Clases",
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: 24, color }}>🏋️‍♂️</Text>
+          ),
+        }}
       />
       <Tab.Screen
         name="ProfileScreen"
         component={ProfileScreen}
-        options={{ tabBarLabel: "Perfil" }}
+        options={{ 
+          tabBarLabel: "Perfil",
+          tabBarIcon: ({ color, size }) => (
+            <Text style={{ fontSize: 24, color }}>👤</Text>
+          ),
+        }}
       />
     </Tab.Navigator>
   );
