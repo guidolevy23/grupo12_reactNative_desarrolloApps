@@ -22,6 +22,7 @@ export default function HomeScreen() {
     try {
       setLoading(true);
       const data = await getClassList();
+      console.log('📋 Cursos recibidos del backend:', JSON.stringify(data, null, 2));
       setClasses(data.results || data);
       setError(null);
     } catch (err) {
@@ -83,9 +84,10 @@ export default function HomeScreen() {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() =>
-          navigation.navigate("ClassDetail", { classId: item.id })
-        }
+        onPress={() => {
+          console.log('👆 Click en curso:', item.id, item.name || item.nombre);
+          navigation.navigate("ClassDetail", { classId: item.id });
+        }}
       >
         <View style={styles.cardHeader}>
           <Text style={styles.className}>{item.nombre || item.name}</Text>

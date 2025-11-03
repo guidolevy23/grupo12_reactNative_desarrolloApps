@@ -23,12 +23,14 @@ const ClassDetailScreen = ({ route }) => {
     const fetchClassDetails = async () => {
       try {
         setLoading(true);
+        console.log('🔍 Cargando detalles para classId:', classId);
         const details = await getClassDetails(classId);
+        console.log('✅ Detalles recibidos:', JSON.stringify(details, null, 2));
         setClassData(details);
         setError(null);
       } catch (err) {
         setError("No se pudieron cargar los detalles de la clase");
-        console.error(err);
+        console.error('❌ Error al cargar detalles:', err);
       } finally {
         setLoading(false);
       }
