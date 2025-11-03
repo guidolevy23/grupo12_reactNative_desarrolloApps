@@ -40,14 +40,12 @@ const ClassDetailScreen = ({ route }) => {
   const handleReserve = async () => {
     try {
       setReserving(true);
-      const token = await AsyncStorage.getItem("token");
       
-      if (!token) {
-        setError("Debes iniciar sesión para reservar");
-        return;
-      }
-
-      await reserveClass(classId, token);
+      // TODO: Obtener el ID del usuario del login real
+      // Por ahora usamos el ID 1 (admin de data.sql)
+      const usuarioId = 1;
+      
+      await reserveClass(classId, usuarioId);
       alert("¡Clase reservada exitosamente!");
       navigation.goBack();
     } catch (err) {

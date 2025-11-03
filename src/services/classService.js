@@ -1,9 +1,27 @@
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://localhost:8080/api';
+// Crear instancia de axios
+const api = axios.create({ 
+  baseURL: 'http://192.168.0.12:8080' 
+});
+
+// Interceptor para agregar el token automáticamente
+api.interceptors.request.use(async (config) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (error) {
+    console.error('Error al obtener token:', error);
+  }
+  return config;
+});
 
 export const getClassList = async () => {
   try {
+    // Spring Data REST endpoint
     const response = await api.get('/api/courses');
     
     // Spring Data REST devuelve: { _embedded: { courses: [...] } }
@@ -28,9 +46,13 @@ export const getClassDetails = async (classId) => {
   }
 };
 
-export const reserveClass = async (classId) => {
+export const reserveClass = async (classId, usuarioId) => {
   try {
-    const response = await api.post('/api/reservations', { courseId: classId });
+    // Tu backend espera: { usuario: { id }, course: { id } }
+    const response = await api.post('/api/reservas', { 
+      usuario: { id: usuarioId },
+      course: { id: classId }  // classId del frontend = course.id del backend
+    });
     return response.data;
   } catch (error) {
     console.error('Error al reservar clase:', error);
