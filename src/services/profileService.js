@@ -1,17 +1,16 @@
-import { useAxios } from '../hooks/useAxios';
+import Api from '../api/axios';
 import { useCallback } from 'react';
 
 export function useProfile() {
-  const api = useAxios();
   
   const getUserDetail = useCallback(async () => {
-    const { data } = await api.get('/users/me'); // SIN /api
+    const { data } = await Api.get('/users/me'); // SIN /api
     return data;
-  }, [api]);
+  }, [Api]);
 
   const postChangesUser = useCallback(async()=>{
 
-  },[api])
+  },[Api])
 
   return { getUserDetail };
 }

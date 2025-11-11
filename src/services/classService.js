@@ -1,29 +1,11 @@
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// Crear instancia de axios
-const api = axios.create({ 
-  baseURL: 'http://192.168.0.12:8080' 
-});
-
-// Interceptor para agregar el token automáticamente
-api.interceptors.request.use(async (config) => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  } catch (error) {
-    console.error('Error al obtener token:', error);
-  }
-  return config;
-});
+import Api from "../api/axios";
 
 export const getClassList = async () => {
   try {
+    
     // Spring Data REST endpoint
     console.log('🔗 Haciendo GET a: /api/courses');
-    const response = await api.get('/api/courses');
+    const response = await Api.get('/courses');
     console.log('✅ Lista response status:', response.status);
     console.log('✅ Lista response data:', response.data);
     
@@ -64,7 +46,7 @@ export const getClassList = async () => {
 
 export const getClassDetails = async (classId) => {
   try {
-    const response = await api.get(`/api/courses/${classId}`);
+    const response = await Api.get(`/courses/${classId}`);
     return response.data;
   } catch (error) {
     console.error('❌ Error al obtener detalles del curso:', error);
@@ -77,7 +59,7 @@ export const getClassDetails = async (classId) => {
 export const reserveClass = async (classId, usuarioId) => {
   try {
     // Tu backend espera: { usuario: { id }, course: { id } }
-    const response = await api.post('/api/reservas', { 
+    const response = await Api.post('/reservas', { 
       usuario: { id: usuarioId },
       course: { id: classId }  // classId del frontend = course.id del backend
     });
