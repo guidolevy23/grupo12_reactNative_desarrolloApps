@@ -8,7 +8,7 @@ const Stack = createStackNavigator();
 
 const RootNavigator = () => {
 
-  const { isAuthenticated } = useContext(AuthContext);
+  const { token } = useContext(AuthContext);
 
   return (
     <Stack.Navigator
@@ -16,7 +16,7 @@ const RootNavigator = () => {
         headerShown: false,
       }}
     >
-      {!isAuthenticated ? (
+      {!token ? (
         <Stack.Screen name="LoginPage" component={LoginNavigator} />
       ) : (
         <Stack.Screen name="MainTabs" component={TabNavigator} />
