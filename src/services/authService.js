@@ -1,12 +1,19 @@
-import axios from 'axios';
+import { useCallback } from 'react';
 import { useAxios } from '../hooks/useAxios';
 
-export const loginUser = async (username, password) => {
+export function userAuthService(){
   const api = useAxios();
-  try {
-    const response = await api.post("/api/auth/login", { username, password })
-    return response.data
-  } catch (error) {
-    throw error;
-  }
+  const loginUser = useCallback(async(username, password) =>{
+    try {
+      const { data } = await api.post('/auth/login', { username, password });
+      console.log(data)
+      return data; // { token, ... }
+
+    } catch (e) {
+      console.log('Login error:', e.message, e.response?.data);
+      throw e
+    }
+  },[api])
+
+  return { loginUser };
 }
