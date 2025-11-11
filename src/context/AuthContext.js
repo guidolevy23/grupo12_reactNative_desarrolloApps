@@ -1,26 +1,29 @@
-import { createContext, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createContext, useEffect, useState, useMemo } from 'react';
+import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [token, setToken] = useState(null);
 
-  const login = async () => {
-    // TODO: Hacer login real con el backend
-    // Por ahora guardamos un token fake para poder acceder a los cursos
-    await AsyncStorage.setItem('token', 'fake-token-for-development');
-    setIsAuthenticated(true);
+  useEffect(() => {
+    (async () => {
+      const t = await getToken();
+      setToken(t);
+    })();
+  }, []);
+
+  const login = async (jwt) => {
+    setToken(jwt);
+    await saveToken(jwt);
   };
 
-  const logout = async () => {
-    await AsyncStorage.removeItem('token');
-    setIsAuthenticated(false);
+  const logout = async (jwt) => {
+    setToken(null);
+    await removeToken(jwt);
   };
 
-  return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = useMemo(() => ({ token, login, logout }), [token]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

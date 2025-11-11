@@ -3,12 +3,14 @@ import React, { useState, useContext } from 'react';
 import { View } from 'react-native';
 import { TextInput, Button, HelperText } from 'react-native-paper';
 import { AuthContext } from '../../../context/AuthContext';
+import { userAuthService } from '../../../services/authService';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const { login } = useContext(AuthContext);
+  const {loginUser} = userAuthService();
 
   const validate = () => {
     const newErrors = {};
@@ -23,14 +25,26 @@ const LoginForm = () => {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validate();
+    console.log("LA CONCHA DE SU MADREEE")
+    console.log(Object.keys(newErrors))
     if (Object.keys(newErrors).length === 0) {
-      login()
-      console.log('Logged in');
-    } else {
-      setErrors(newErrors);
+      try {
+      console.log("Intentando login con:", email, password);
+      const data = await loginUser(email, password);
+      if (data) {
+        await login(data.token); // guarda token en contexto
+        console.log("✅ Login exitoso");
+      } else {
+        console.log("⚠️ loginUser no devolvió data");
+      }
+    } catch (e) {
+      console.log("❌ Login error:", e.message || e);
     }
+  } else {
+    setErrors(newErrors);
+  }
   };
 
   return (
