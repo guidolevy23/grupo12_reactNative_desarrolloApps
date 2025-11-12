@@ -8,9 +8,11 @@ export function useProfile() {
     return data;
   }, [Api]);
 
-  const postChangesUser = useCallback(async()=>{
-
+  const postChangesUser = useCallback(async(usuario)=>{
+    const {id, name, telefono, direccion, photoUrl, password, role, email} = usuario;
+    const {data} = await Api.put(`/users/${id}`, {id, name, telefono, direccion, photoUrl, password, role, email, validated: true})
+    console.log(data)
   },[Api])
 
-  return { getUserDetail };
+  return { getUserDetail, postChangesUser};
 }

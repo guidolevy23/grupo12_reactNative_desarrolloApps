@@ -20,13 +20,16 @@ export default function ProfileScreen() {
   const [draft, setDraft] = useState();
   const [clases, setClases] = useState();
   const { getUserDetail } = useProfile();
+  const {postChangesUser} = useProfile();
 
 useEffect(() => {
   let alive = true;
   (async () => {
     try {
       const usuario = await getUserDetail(); // ✅ ya viene autenticada
-      if (alive && usuario) await setUser(usuario);
+      if (alive && usuario){
+        setUser(usuario);
+      }
     } catch (e) {
       console.log('Error getUserDetail:', e);
     }
@@ -51,6 +54,7 @@ useEffect(() => {
       setUser(draft);
       // Persistencia opcional:
       // await AsyncStorage.setItem("@user_profile", JSON.stringify(draft));
+      postChangesUser(draft)
       setEditing(false);
       Alert.alert("Perfil", "Cambios guardados");
     } catch (e) {
