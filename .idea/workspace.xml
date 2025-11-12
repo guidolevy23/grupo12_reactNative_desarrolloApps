@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="37741925-8341-4b42-9df0-c4d363cdc16d" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/screens/reservas/ReservasScreen.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/screens/reservas/components/ReservasCard.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/services/reservaService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/navigation/TabNavigator.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/navigation/TabNavigator.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/screens/home/ClassDetailScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/home/ClassDetailScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/profileService.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/profileService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/utils/tokenStorage.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/tokenStorage.js" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="357sJ8saTKTW0jhZsUVhn5qd04i" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "reservas"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\rocco\Documents\GitHub\grupo12_reactNative_desarrolloApps\src\screens\reservas" />
+      <recent name="C:\Users\rocco\Documents\GitHub\grupo12_reactNative_desarrolloApps\src\screens" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="37741925-8341-4b42-9df0-c4d363cdc16d" name="Changes" comment="" />
+      <created>1762472375209</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1762472375209</updated>
+    </task>
+    <servers />
+  </component>
+</project>
