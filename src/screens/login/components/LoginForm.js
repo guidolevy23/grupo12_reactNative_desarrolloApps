@@ -1,16 +1,15 @@
 
 import React, { useState, useContext } from 'react';
-import { View } from 'react-native';
+import { View, Alert } from 'react-native';
 import { TextInput, Button, HelperText } from 'react-native-paper';
 import { AuthContext } from '../../../context/AuthContext';
-import { userAuthService } from '../../../services/authService';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [loading, setIsLoading] = useState(false)
   const { login } = useContext(AuthContext);
-  const {loginUser} = userAuthService();
 
   const validate = () => {
     const newErrors = {};
@@ -27,24 +26,19 @@ const LoginForm = () => {
 
   const handleSubmit = async () => {
     const newErrors = validate();
-    console.log("LA CONCHA DE SU MADREEE")
     console.log(Object.keys(newErrors))
     if (Object.keys(newErrors).length === 0) {
+      setIsLoading(true);
       try {
-      console.log("Intentando login con:", email, password);
-      const data = await loginUser(email, password);
-      if (data) {
-        await login(data.token); // guarda token en contexto
-        console.log("✅ Login exitoso");
-      } else {
-        console.log("⚠️ loginUser no devolvió data");
+        await login(email, password);
+      } catch (error) {
+        Alert.alert("Fallor al hacer el Login", error.message || "Something went wrong.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.log("❌ Login error:", e.message || e);
+    } else {
+      setErrors(newErrors);
     }
-  } else {
-    setErrors(newErrors);
-  }
   };
 
   return (
@@ -71,7 +65,7 @@ const LoginForm = () => {
         {errors.password}
       </HelperText>
       <Button mode="contained" onPress={handleSubmit}>
-        Ingresar
+        {loading ? "Ingresando..." : "Ingresar"} 
       </Button>
     </View>
   );
