@@ -19,7 +19,14 @@ const AuthService = {
       return token;
     } catch (error) {
       console.error("Login failed:", error);
-      // Re-throw a clean error for the UI to display
+      throw new Error(error.response?.data?.message || 'Error sistematico');
+    }
+  },
+  register: async (name, username, password) => {
+    try {
+      await Api.post('/auth/register', { name, username, password });
+    } catch (error) {
+      console.error("Register failed:", error);
       throw new Error(error.response?.data?.message || 'Error sistematico');
     }
   },

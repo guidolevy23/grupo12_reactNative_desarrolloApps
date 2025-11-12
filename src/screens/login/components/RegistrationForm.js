@@ -1,11 +1,12 @@
 
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Alert, View } from 'react-native';
 import { TextInput, Button, HelperText } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import AuthService from '../../../services/authService';
 
 const RegistrationForm = () => {
-  const [firstName, setFirstName] = useState('');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,29 +15,32 @@ const RegistrationForm = () => {
 
   const validate = () => {
     const newErrors = {};
-    if (!firstName) {
-      newErrors.firstName = 'First name is required';
+    if (!name) {
+      newErrors.name = 'Nombre es requerido';
     }
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email es requerido';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Email es invalido';
     }
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = 'Una contraseña es requerida';
     }
     if (password !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = 'Las contraseñas no son iguales';
     }
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validate();
     if (Object.keys(newErrors).length === 0) {
-      // Handle successful registration
-      console.log('Registered');
-      navigation.navigate('Login');
+      try {
+        await AuthService.register(name, email, password);
+        navigation.navigate('Otp');
+      } catch (e) {
+        Alert.alert("Fallo la registracion");
+      }
     } else {
       setErrors(newErrors);
     }
@@ -46,12 +50,12 @@ const RegistrationForm = () => {
     <View>
       <TextInput
         label="Nombre"
-        value={firstName}
-        onChangeText={setFirstName}
-        error={!!errors.firstName}
+        value={name}
+        onChangeText={setName}
+        error={!!errors.name}
       />
-      <HelperText type="error" visible={!!errors.firstName}>
-        {errors.firstName}
+      <HelperText type="error" visible={!!errors.name}>
+        {errors.name}
       </HelperText>
       <TextInput
         label="Email"
@@ -65,7 +69,7 @@ const RegistrationForm = () => {
         {errors.email}
       </HelperText>
       <TextInput
-        label="Password"
+        label="Contraseña"
         value={password}
         onChangeText={setPassword}
         error={!!errors.password}
@@ -75,7 +79,7 @@ const RegistrationForm = () => {
         {errors.password}
       </HelperText>
       <TextInput
-        label="Confirm Password"
+        label="Confirmar contraseña"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         error={!!errors.confirmPassword}
@@ -85,7 +89,7 @@ const RegistrationForm = () => {
         {errors.confirmPassword}
       </HelperText>
       <Button mode="contained" onPress={handleSubmit}>
-        Register
+        Registrate
       </Button>
     </View>
   );
