@@ -46,7 +46,6 @@ const AuthService = {
     try {
       await Api.post('/auth/otp/validate', { email, otp });
     } catch (error) {
-      console.error("Otp Validation failed", error);
       throw new Error(error.response?.data?.message || 'Error sistematico');
     }
   },

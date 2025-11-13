@@ -12,8 +12,11 @@ export default function OtpScreen() {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timer, setTimer] = useState(60);
   const inputRefs = useRef([]);
-  const [otpError, setOtpError] = useState(null);
-
+  const [snackbar, setSnackbar] = useState({
+    visible: false,
+    message: "",
+    color: "red",
+  });
   const requestOtp = async() => {
     try {
       await AuthService.requestOtp(email)
@@ -47,18 +50,41 @@ export default function OtpScreen() {
 
     if (newOtp.join('').length === 6) {
       Keyboard.dismiss();
-      verifyOtp(newOtp.join(''));
+      handleOtp(newOtp.join(''));
     }
   };
 
-  const verifyOtp = async code => {
-    console.log('Verifying OTP:', code);
+  const handleOtp = async (code) => {
+    setSnackbar({ visible: false, message: "", color: "red" });
+
     try {
       await AuthService.validateOtp(email, code);
-    } catch(err) {
-      setOtpError("No pudimos validar tu código, intenta nuevamente")
+
+      // ✅ Show success message
+      setSnackbar({
+        visible: true,
+        message: "Login successful!",
+        color: "green",
+      });
+
+      // Wait a moment so the user can see it, then navigate
+      setTimeout(() => {
+        setSnackbar({ visible: false, message: "", color: "green" });
+        navigation.navigate('Login');
+      }, 1200);
+    } catch (err) {
+      let message = "Error"
+      if (err.message == "Invalid OTP") {
+        message = "Código invalido, intenta nuevamente";
+      } else {
+       message = "No pudimos validar tu código, intenta nuevamente";
+      }
+      setSnackbar({
+        visible: true,
+        message: message,
+        color: "red",
+      });
     }
-    navigation.navigate('Login');
   };
 
   const resendOtp = () => {
@@ -104,21 +130,18 @@ export default function OtpScreen() {
 
       <Button
         mode="contained"
-        onPress={() => verifyOtp(otp.join(''))}
+        onPress={() => handleOtp(otp.join(''))}
         style={styles.verifyButton}
       >
         Validar
       </Button>
       <Snackbar
-        visible={!!otpError}
-        onDismiss={() => setOtpError(null)}
-        duration={4000}
-        action={{
-          label: 'OK',
-          onPress: () => setOtpError(null),
-        }}
+        visible={snackbar.visible}
+        onDismiss={() => setSnackbar({ ...snackbar, visible: false })}
+        duration={1000}
+        style={{ backgroundColor: snackbar.color }}
       >
-        {otpError}
+        {snackbar.message}
       </Snackbar>
     </View>
   );
