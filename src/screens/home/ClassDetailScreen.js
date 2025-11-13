@@ -12,6 +12,8 @@ import { useNavigation } from "@react-navigation/native";
 import { getClassDetails } from "../../services/classService";
 import { crearReserva } from "../../services/reservaService";
 import { useProfile } from "../../services/profileService";
+import { getCupos, initCupos, incrementarCupo } from "../../services/cuposService";
+
 
 export default function ClassDetailScreen({ route }) {
   const navigation = useNavigation();
@@ -30,6 +32,21 @@ export default function ClassDetailScreen({ route }) {
         console.log("🔍 Cargando detalles para classId:", classId);
         const details = await getClassDetails(classId);
         console.log("✅ Detalles recibidos:", JSON.stringify(details, null, 2));
+
+        // inicializo cupos simulados
+        const cupos = await initCupos(
+          classId,
+          20, // capacity fake
+          0   // inscriptos iniciales fake
+        );
+
+        setClassData({
+          ...details,
+          capacity: cupos.capacity,
+          currentEnrollment: cupos.currentEnrollment,
+        });
+
+
         setClassData(details);
       } catch (err) {
         console.error("❌ Error al cargar detalles:", err);
@@ -42,35 +59,51 @@ export default function ClassDetailScreen({ route }) {
     fetchClassDetails();
   }, [classId]);
 
-  const handleReserve = async () => {
-    try {
-      setReserving(true);
+const handleReserve = async () => {
+  try {
+    setReserving(true);
 
-      const usuario = await getUserDetail();
-      if (!usuario?.id) {
-        Alert.alert("Error", "⚠️ No se pudo obtener el usuario. Iniciá sesión nuevamente.");
-        return;
-      }
+    const usuario = await getUserDetail();
+    const userId = usuario?.id || usuario?.idUsuario;
 
-      console.log("🧩 Reservando clase para usuario:", usuario.id, "course:", classId);
-      await crearReserva(usuario.id, classId);
-
-      Alert.alert("Éxito", "✅ ¡Clase reservada exitosamente!");
-
-      // 👇 NOMBRE CORRECTO DEL TAB
-      navigation.navigate("Reservas", { refresh: true });
-
-    } catch (err) {
-      console.error("❌ Error al reservar:", err.response?.data || err.message);
-      if (err.response?.status === 409) {
-        Alert.alert("Atención", "⚠️ Ya tenés una reserva activa para esta clase.");
-      } else {
-        Alert.alert("Error", "❌ Ocurrió un error al reservar la clase.");
-      }
-    } finally {
-      setReserving(false);
+    if (!userId) {
+      Alert.alert(
+        "Error",
+        "⚠ No se pudo obtener el usuario. Iniciá sesión nuevamente."
+      );
+      return;
     }
-  };
+
+    console.log("🧩 Reservando clase:", {
+      usuarioId: userId,
+      courseId: classId,
+    });
+
+    // ⬇️ ahora crearReserva lanza errores con mensajes limpios
+    await crearReserva(userId, classId);
+
+    const nuevosCupos = await incrementarCupo(classId);
+
+    setClassData(prev => ({
+      ...prev,
+      currentEnrollment: nuevosCupos.currentEnrollment,
+    }));
+
+
+    Alert.alert("Reserva confirmada", "🎉 ¡Te anotaste correctamente!");
+    navigation.navigate("Reservas", { refresh: true });
+
+  } catch (error) {
+    console.log("❌ Error al reservar:", error);
+
+    // ⛑ Los errores ya llegan con error.message desde reservaService
+    Alert.alert("Atención", error.message);
+  } finally {
+    setReserving(false);
+  }
+};
+
+
 
 
   if (loading) {
