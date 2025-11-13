@@ -41,7 +41,7 @@ useEffect(() => {
       const usuario = await getUserDetail(); // ✅ ya viene autenticada
       if (alive && usuario){
         setUser(usuario);
-        console.log(usuario)
+        
       }
     } catch (e) {
       console.log('Error getUserDetail:', e);
@@ -74,11 +74,8 @@ useEffect(() => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Perfil de usuario</Text>
-
       {/* Avatar + datos */}
       <View style={styles.header}>
-        {/* <Image source={{ uri: (editing ? draft : user).avatar }} style={styles.avatar} /> */}
         <Image
           source={{ uri: (editing ? draft : user)?.photoUrl ?  (editing ? draft : user).photoUrl : "-"}}
           style={styles.avatar}
@@ -108,7 +105,7 @@ useEffect(() => {
               style={styles.input}
               placeholder="Nombre"
               value={draft.name}
-              onChangeText={(t) => setDraft({ ...draft, name: t })}
+              onChangeText={(n) => setDraft({ ...draft, name: n })}
             />
             <TextInput
               style={styles.input}
@@ -120,7 +117,7 @@ useEffect(() => {
               style={styles.input}
               placeholder="Direccion"
               value={draft.direccion}
-              onChangeText={(t) => setDraft({ ...draft, direccion: t })}
+              onChangeText={(d) => setDraft({ ...draft, direccion: d })}
             />
           </>
         ) : (
@@ -178,73 +175,177 @@ useEffect(() => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, gap: 16 },
-  title: { fontSize: 18, fontWeight: "600" },
-  header: { alignItems: "center", gap: 8, marginTop: 12 },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#f5f5f5",
+  },
+
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
+  },
+
+  header: {
+    marginTop: 12,
+    marginBottom: 20,
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+    alignItems: "center",
+    gap: 8,
+    // sombra estilo card
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+
   avatar: {
     width: 110,
     height: 110,
     borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#ddd",
+    borderWidth: 2,
+    borderColor: "#e0e0e0",
   },
-  name: { fontSize: 22, fontWeight: "600" },
-  email: { color: "#666" },
+
+  name: {
+    fontSize: 22,
+    fontWeight: "600",
+    color: "#333",
+  },
+
+  email: {
+    color: "#666",
+    fontSize: 14,
+  },
 
   input: {
     width: "100%",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#e0e0e0",
     borderRadius: 10,
     padding: 12,
     fontSize: 16,
+    backgroundColor: "white",
+    marginTop: 8,
   },
 
   statsRow: {
     flexDirection: "row",
     gap: 12,
     justifyContent: "space-between",
-    marginTop: 12,
+    marginTop: 16,
   },
+
   statCard: {
     flex: 1,
     padding: 16,
-    borderWidth: 1,
-    borderColor: "#eee",
+    backgroundColor: "white",
     borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
     alignItems: "center",
+    // sombra tipo card
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  statNumber: { fontSize: 18, fontWeight: "700" },
-  statLabel: { color: "#777", marginTop: 4 },
 
-  actions: { marginTop: "auto", gap: 10 },
+  statNumber: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+  },
+
+  statLabel: {
+    color: "#777",
+    marginTop: 4,
+    fontSize: 13,
+  },
+
+  actions: {
+    marginTop: "auto",
+    gap: 10,
+    paddingTop: 20,
+  },
+
   btn: {
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
     borderWidth: 1,
+    backgroundColor: "white",
   },
-  primary: { backgroundColor: "#111", borderColor: "#111" },
-  outline: { backgroundColor: "#fff", borderColor: "#ccc" },
-  danger: { backgroundColor: "#fff", borderColor: "#f33" },
 
-  btnTextPrimary: { color: "#fff", fontWeight: "600" },
-  btnTextOutline: { color: "#111", fontWeight: "600" },
-  btnTextDanger: { color: "#f33", fontWeight: "700" },
-  pickLabel: { fontSize: 14, color: '#555', marginBottom: 8, marginTop: 6 },
-avatarsRow: { gap: 10, paddingVertical: 6 },
-avatarOption: {
-  padding: 2,
-  borderRadius: 999,
-  borderWidth: 2,
-  borderColor: 'transparent',
-},
-avatarSelected: {
-  borderColor: '#111', // resalta seleccionado
-},
-avatarThumb: {
-  width: 64,
-  height: 64,
-  borderRadius: 999,
-},
+  primary: {
+    backgroundColor: "#667eea",
+    borderColor: "#667eea",
+  },
+
+  outline: {
+    backgroundColor: "#ffffff",
+    borderColor: "#d4d4d4",
+  },
+
+  danger: {
+    backgroundColor: "#fff5f5",
+    borderColor: "#f56565",
+  },
+
+  btnTextPrimary: {
+    color: "#ffffff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
+  btnTextOutline: {
+    color: "#333",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
+  btnTextDanger: {
+    color: "#e53e3e",
+    fontWeight: "700",
+    fontSize: 16,
+  },
+
+  pickLabel: {
+    fontSize: 14,
+    color: "#555",
+    marginBottom: 8,
+    marginTop: 10,
+  },
+
+  avatarsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+    paddingVertical: 6,
+  },
+
+  avatarOption: {
+    padding: 2,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+
+  avatarSelected: {
+    borderColor: "#667eea", // resalta seleccionado
+  },
+
+  avatarThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 999,
+  },
 });
