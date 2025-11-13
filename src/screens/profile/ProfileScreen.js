@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  ScrollView
 } from "react-native";
 import { AuthContext } from "../../context/AuthContext";
 import  { useProfile } from "../../services/profileService";
@@ -21,6 +22,17 @@ export default function ProfileScreen() {
   const [clases, setClases] = useState();
   const { getUserDetail } = useProfile();
   const {postChangesUser} = useProfile();
+  const AVATARS = [
+    'https://i.pravatar.cc/300?img=1',
+    'https://i.pravatar.cc/300?img=2',
+    'https://i.pravatar.cc/300?img=3',
+    'https://i.pravatar.cc/300?img=4',
+    'https://i.pravatar.cc/300?img=5',
+    'https://i.pravatar.cc/300?img=6',
+    'https://i.pravatar.cc/300?img=7',
+    'https://i.pravatar.cc/300?img=8',
+  ];
+
 
 useEffect(() => {
   let alive = true;
@@ -29,6 +41,7 @@ useEffect(() => {
       const usuario = await getUserDetail(); // ✅ ya viene autenticada
       if (alive && usuario){
         setUser(usuario);
+        console.log(usuario)
       }
     } catch (e) {
       console.log('Error getUserDetail:', e);
@@ -37,9 +50,6 @@ useEffect(() => {
   return () => { alive = false };
 }, [getUserDetail]);
 
-// useEffect(() => {
-//   setClases((user.reservas ?? []).join(', '));
-// }, [user.reservas]);
 
   const { logout } = useContext(AuthContext); 
 
@@ -69,21 +79,37 @@ useEffect(() => {
       {/* Avatar + datos */}
       <View style={styles.header}>
         {/* <Image source={{ uri: (editing ? draft : user).avatar }} style={styles.avatar} /> */}
-
+        <Image
+          source={{ uri: (editing ? draft : user)?.photoUrl ?  (editing ? draft : user).photoUrl : "-"}}
+          style={styles.avatar}
+        />
         {editing ? (
           <>
+          {/* Picker de Avatares */}
+            <View style={{ width: '100%' }}>
+              <Text style={styles.pickLabel}>Elegí tu avatar</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.avatarsRow}>
+                {AVATARS.map((url) => {
+                  const selected = draft.avatar === url;
+                  return (
+                    <TouchableOpacity
+                      key={url}
+                      onPress={() => setDraft({ ...draft, photoUrl: url })}
+                      style={[styles.avatarOption, selected && styles.avatarSelected]}
+                      activeOpacity={0.8}
+                    >
+                      <Image source={{ uri: url }} style={styles.avatarThumb} />
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
             <TextInput
               style={styles.input}
               placeholder="Nombre"
               value={draft.name}
               onChangeText={(t) => setDraft({ ...draft, name: t })}
             />
-            {/* <TextInput
-              style={styles.input}
-              placeholder="URL de avatar (opcional)"
-              value={draft.avatar}
-              onChangeText={(t) => setDraft({ ...draft, avatar: t })}
-            /> */}
             <TextInput
               style={styles.input}
               placeholder="Telefono"
@@ -205,4 +231,20 @@ const styles = StyleSheet.create({
   btnTextPrimary: { color: "#fff", fontWeight: "600" },
   btnTextOutline: { color: "#111", fontWeight: "600" },
   btnTextDanger: { color: "#f33", fontWeight: "700" },
+  pickLabel: { fontSize: 14, color: '#555', marginBottom: 8, marginTop: 6 },
+avatarsRow: { gap: 10, paddingVertical: 6 },
+avatarOption: {
+  padding: 2,
+  borderRadius: 999,
+  borderWidth: 2,
+  borderColor: 'transparent',
+},
+avatarSelected: {
+  borderColor: '#111', // resalta seleccionado
+},
+avatarThumb: {
+  width: 64,
+  height: 64,
+  borderRadius: 999,
+},
 });
