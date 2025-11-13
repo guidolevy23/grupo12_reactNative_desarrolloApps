@@ -37,7 +37,7 @@ const RegistrationForm = () => {
     if (Object.keys(newErrors).length === 0) {
       try {
         await AuthService.register(name, email, password);
-        navigation.navigate('Otp');
+        navigation.navigate("Otp", { email });
       } catch (e) {
         Alert.alert("Fallo la registracion");
       }
