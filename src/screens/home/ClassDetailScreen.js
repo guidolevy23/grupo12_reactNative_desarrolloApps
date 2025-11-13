@@ -56,7 +56,10 @@ export default function ClassDetailScreen({ route }) {
       await crearReserva(usuario.id, classId);
 
       Alert.alert("Éxito", "✅ ¡Clase reservada exitosamente!");
-      navigation.navigate("ReservasScreen", { refresh: true });
+
+      // 👇 NOMBRE CORRECTO DEL TAB
+      navigation.navigate("Reservas", { refresh: true });
+
     } catch (err) {
       console.error("❌ Error al reservar:", err.response?.data || err.message);
       if (err.response?.status === 409) {
@@ -68,6 +71,7 @@ export default function ClassDetailScreen({ route }) {
       setReserving(false);
     }
   };
+
 
   if (loading) {
     return (
