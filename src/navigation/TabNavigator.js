@@ -9,6 +9,7 @@ import ProfileScreen from "../screens/profile/ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const ProfileStack = createStackNavigator();
 
 // Stack Navigator para Home (incluye la lista y el detalle)
 const HomeStack = () => {
@@ -45,6 +46,22 @@ const HomeStack = () => {
     </Stack.Navigator>
   );
 };
+function ProfileStackNavigator() {
+  return (
+    <ProfileStack.Navigator>
+      <ProfileStack.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          title: 'Perfil de usuario',
+          headerStyle: { backgroundColor: '#667eea' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+    </ProfileStack.Navigator>
+  );
+}
 
 const TabNavigator = () => {
   return (
@@ -66,13 +83,11 @@ const TabNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="ProfileScreen"
-        component={ProfileScreen}
-        options={{ 
-          tabBarLabel: "Perfil",
-          tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: 24, color }}>👤</Text>
-          ),
+        name="ProfileTab"
+        component={ProfileStackNavigator} // 👈 antes: ProfileScreen directo
+        options={{
+          tabBarLabel: 'Perfil',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>👤</Text>,
         }}
       />
     </Tab.Navigator>
