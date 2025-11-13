@@ -6,10 +6,12 @@ import { createStackNavigator } from "@react-navigation/stack";
 import HomeScreen from "../screens/home/HomeScreen";
 import ClassDetailScreen from "../screens/home/ClassDetailScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
+import HistoryScreen from "../screens/history/HistoryScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ProfileStack = createStackNavigator();
+const HistoryStack = createStackNavigator();
 
 // Stack Navigator para Home (incluye la lista y el detalle)
 const HomeStack = () => {
@@ -63,6 +65,23 @@ function ProfileStackNavigator() {
   );
 }
 
+function HistoryStackNavigator() {
+  return (
+    <HistoryStack.Navigator>
+      <HistoryStack.Screen
+        name="History"
+        component={HistoryScreen}
+        options={{
+          title: 'Historial',
+          headerStyle: { backgroundColor: '#667eea' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+    </HistoryStack.Navigator>
+  );
+}
+
 const TabNavigator = () => {
   return (
     <Tab.Navigator
@@ -80,6 +99,14 @@ const TabNavigator = () => {
           tabBarIcon: ({ color, size }) => (
             <Text style={{ fontSize: 24, color }}>🏋️‍♂️</Text>
           ),
+        }}
+      />
+      <Tab.Screen
+        name="HistoryTab"
+        component={HistoryStackNavigator}
+        options={{
+          tabBarLabel: 'Historial',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>📊</Text>,
         }}
       />
       <Tab.Screen
