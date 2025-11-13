@@ -9,58 +9,94 @@ import {
   RefreshControl,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { getClassList } from "../../services/classService";
+
+import Filtros from "./components/Filter";
+
+import {
+  getClassList,
+  getClassesByBranch,
+  getClassesByName,
+  getClassesByDate,
+} from "../../services/classService";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
+
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
+  // Filtros dinámicos desde backend
+  const [availableBranches, setAvailableBranches] = useState([]);
+  const [availableDisciplines, setAvailableDisciplines] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
+
+  const [showFilters, setShowFilters] = useState(false);
+
+  // ==================================================================
+  // 🔥 EXTRACTORES (igual que Android → se derivan de los cursos)
+  // ==================================================================
+  const extractUniqueBranches = (courses) => {
+    const branches = courses.map(c => c.branch).filter(Boolean);
+    return [...new Set(branches)];
+  };
+
+  const extractUniqueDisciplines = (courses) => {
+    const disciplines = courses
+      .map(c => c.name?.split(" ")[0]) // “Yoga Avanzado” → “Yoga”
+      .filter(Boolean);
+    return [...new Set(disciplines)];
+  };
+
+  const extractUniqueDates = (courses) => {
+    const dates = courses
+      .map(c => c.startsAt?.split("T")[0])
+      .filter(Boolean);
+    return [...new Set(dates)];
+  };
+
+  // ==================================================================
+  // 🔥 FILTRAR (backend)
+  // ==================================================================
+  const applyFilters = async ({ branch, discipline, date }) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      let results;
+
+      if (branch) results = await getClassesByBranch(branch);
+      else if (discipline) results = await getClassesByName(discipline);
+      else if (date) results = await getClassesByDate(date);
+      else results = await getClassList();
+
+      setClasses(results);
+    } catch (err) {
+      console.log("❌ Error al filtrar:", err);
+      setError("No se pudieron cargar las clases filtradas");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==================================================================
+  // 🔥 CARGAR LISTA INICIAL (y extraer filtros dinámicos)
+  // ==================================================================
   const fetchClasses = async () => {
     try {
       setLoading(true);
       const data = await getClassList();
-      console.log('📋 Cursos recibidos del backend:', JSON.stringify(data, null, 2));
-      setClasses(data.results || data);
-      setError(null);
+      setClasses(data);
+
+      // Extraer listas dinámicas (como Android)
+      setAvailableBranches(extractUniqueBranches(data));
+      setAvailableDisciplines(extractUniqueDisciplines(data));
+      setAvailableDates(extractUniqueDates(data));
+
     } catch (err) {
-      setError("Error al cargar las clases");
       console.error(err);
-      // Datos de ejemplo en caso de error
-      setClasses([
-        {
-          id: 1,
-          nombre: "Funcional 18:00",
-          tipo: "Funcional",
-          sede: "Palermo",
-          horario: "18:00 - 19:00",
-          instructor: "Juan Pérez",
-          capacidad: 20,
-          ocupados: 15,
-        },
-        {
-          id: 2,
-          nombre: "Yoga 19:00",
-          tipo: "Yoga",
-          sede: "Belgrano",
-          horario: "19:00 - 20:00",
-          instructor: "María González",
-          capacidad: 15,
-          ocupados: 10,
-        },
-        {
-          id: 3,
-          nombre: "Spinning 20:00",
-          tipo: "Spinning",
-          sede: "Palermo",
-          horario: "20:00 - 21:00",
-          instructor: "Carlos Ruiz",
-          capacidad: 25,
-          ocupados: 20,
-        },
-      ]);
+      setError("Error al cargar las clases");
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -76,46 +112,40 @@ export default function HomeScreen() {
     fetchClasses();
   };
 
+  // ==================================================================
+  // 🔥 Render de cada card
+  // ==================================================================
   const renderClassItem = ({ item }) => {
-    // Simplificado: solo mostrar info básica sin mucho procesamiento
-    const availableSpots = (item.capacidad || item.capacity || 20) - (item.ocupados || item.currentEnrollment || 0);
+    const availableSpots =
+      (item.capacity || 20) - (item.currentEnrollment || 0);
+
     const isAlmostFull = availableSpots <= 5;
 
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => {
-          console.log('👆 Click en curso:', item.id, item.name || item.nombre);
-          navigation.navigate("ClassDetail", { classId: item.id });
-        }}
+        onPress={() => navigation.navigate("ClassDetail", { classId: item.id })}
       >
         <View style={styles.cardHeader}>
-          <Text style={styles.className}>{item.nombre || item.name}</Text>
+          <Text style={styles.className}>{item.name}</Text>
           <View
             style={[
               styles.typeBadge,
-              { backgroundColor: getTypeColor(item.tipo || item.type) },
+              { backgroundColor: getTypeColor(item.name?.split(" ")[0]) },
             ]}
           >
-            <Text style={styles.typeBadgeText}>{item.tipo || item.type}</Text>
+            <Text style={styles.typeBadgeText}>
+              {item.name?.split(" ")[0]}
+            </Text>
           </View>
         </View>
 
         <View style={styles.cardBody}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>🏢 {item.sede || item.branch || item.location}</Text>
-          </View>
+          <Text style={styles.infoLabel}>🏢 {item.branch}</Text>
+          <Text style={styles.infoLabel}>⏰ {item.schedule}</Text>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>
-              ⏰ {item.horario || item.schedule}
-            </Text>
-          </View>
-
-          {(item.instructor || item.professor) && (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>👤 {item.instructor || item.professor}</Text>
-            </View>
+          {item.professor && (
+            <Text style={styles.infoLabel}>👤 {item.professor}</Text>
           )}
 
           <View style={styles.cardFooter}>
@@ -129,6 +159,7 @@ export default function HomeScreen() {
                 ? `${availableSpots} lugares disponibles`
                 : "Clase llena"}
             </Text>
+
             <Text style={styles.arrowText}>→</Text>
           </View>
         </View>
@@ -147,6 +178,9 @@ export default function HomeScreen() {
     return colors[type] || "#667eea";
   };
 
+  // ==================================================================
+  // 🔥 Loading
+  // ==================================================================
   if (loading && !refreshing) {
     return (
       <View style={styles.centered}>
@@ -156,25 +190,51 @@ export default function HomeScreen() {
     );
   }
 
+  // ==================================================================
+  // 🔥 PANTALLA COMPLETA
+  // ==================================================================
   return (
     <View style={styles.container}>
+
       <View style={styles.header}>
         <Text style={styles.title}>🏋️‍♂️ Clases Disponibles</Text>
-        <Text style={styles.subtitle}>
-          Elegí tu clase y reservá tu lugar
-        </Text>
+        <Text style={styles.subtitle}>Elegí tu clase y reservá tu lugar</Text>
       </View>
+
+      {/* BOTÓN PARA ABRIR LOS FILTROS */}
+      <TouchableOpacity
+        style={styles.filterButton}
+        onPress={() => setShowFilters(!showFilters)}
+      >
+        <Text style={styles.filterButtonText}>
+          {showFilters ? "Ocultar filtros ▲" : "Mostrar filtros ▼"}
+        </Text>
+      </TouchableOpacity>
+
+      {/* PANEL DESPLEGABLE */}
+      {showFilters && (
+        <View style={{ paddingHorizontal: 15 }}>
+          <Filtros
+            branches={availableBranches}
+            disciplines={availableDisciplines}
+            dates={availableDates}
+            onApply={(f) => {
+              applyFilters(f);
+              setShowFilters(false);
+            }}
+          />
+        </View>
+      )}
 
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>⚠️ {error}</Text>
-          <Text style={styles.errorSubtext}>Mostrando datos de ejemplo</Text>
         </View>
       )}
 
       <FlatList
         data={classes}
-        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        keyExtractor={(item) => item.id?.toString()}
         renderItem={renderClassItem}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -187,9 +247,7 @@ export default function HomeScreen() {
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              No hay clases disponibles en este momento
-            </Text>
+            <Text style={styles.emptyText}>No hay clases disponibles ahora</Text>
           </View>
         }
       />
@@ -197,74 +255,64 @@ export default function HomeScreen() {
   );
 }
 
+// ==================================================================
+// 🔥 ESTILOS (LOS MISMOS QUE TENÍAS)
+// ==================================================================
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    marginTop: 10,
-    color: "#666",
-    fontSize: 16,
-  },
+  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+
+  loadingText: { marginTop: 10, color: "#666", fontSize: 16 },
+
   header: {
     padding: 20,
     backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
   },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
+  title: { fontSize: 28, fontWeight: "bold", color: "#333" },
+  subtitle: { fontSize: 16, color: "#666" },
+
+  filterButton: {
+    backgroundColor: "white",
+    padding: 12,
+    marginHorizontal: 15,
+    marginTop: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  filterButtonText: {
+    textAlign: "center",
+    fontSize: 15,
+    fontWeight: "600",
     color: "#333",
-    marginBottom: 5,
   },
-  subtitle: {
-    fontSize: 16,
-    color: "#666",
-  },
+
+  listContent: { padding: 15 },
+
   errorContainer: {
     backgroundColor: "#fff3cd",
     padding: 15,
     marginHorizontal: 15,
-    marginTop: 15,
     borderRadius: 10,
-    borderLeftWidth: 4,
-    borderLeftColor: "#ffc107",
+    marginBottom: 10,
   },
-  errorText: {
-    color: "#856404",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  errorSubtext: {
-    color: "#856404",
-    fontSize: 12,
-    marginTop: 5,
-  },
-  listContent: {
-    padding: 15,
-  },
+  errorText: { color: "#856404", fontWeight: "600" },
+
+  emptyContainer: { padding: 40, alignItems: "center" },
+  emptyText: { fontSize: 16, color: "#999" },
+
   card: {
     backgroundColor: "white",
     borderRadius: 15,
     padding: 15,
     marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 3,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: 15,
   },
   className: {
@@ -273,55 +321,19 @@ const styles = StyleSheet.create({
     color: "#333",
     flex: 1,
   },
-  typeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  typeBadgeText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  cardBody: {
-    gap: 8,
-  },
-  infoRow: {
-    marginBottom: 5,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: "#666",
-  },
+  typeBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 15 },
+  typeBadgeText: { color: "white", fontSize: 12, fontWeight: "600" },
+  cardBody: { gap: 8 },
+  infoLabel: { fontSize: 14, color: "#666" },
   cardFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     marginTop: 10,
     paddingTop: 10,
     borderTopWidth: 1,
     borderTopColor: "#f0f0f0",
   },
-  spotsText: {
-    fontSize: 14,
-    color: "#48bb78",
-    fontWeight: "600",
-  },
-  spotsTextWarning: {
-    color: "#f59e0b",
-  },
-  arrowText: {
-    fontSize: 20,
-    color: "#667eea",
-    fontWeight: "bold",
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: "center",
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#999",
-    textAlign: "center",
-  },
+  spotsText: { fontSize: 14, color: "#48bb78", fontWeight: "600" },
+  spotsTextWarning: { color: "#f59e0b" },
+  arrowText: { fontSize: 20, color: "#667eea", fontWeight: "bold" },
 });

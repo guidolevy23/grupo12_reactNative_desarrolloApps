@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="37741925-8341-4b42-9df0-c4d363cdc16d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/services/cuposService.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/screens/home/components/Filter.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/screens/home/ClassDetailScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/home/ClassDetailScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/screens/reservas/ReservasScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/reservas/ReservasScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/reservaService.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/reservaService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/screens/home/HomeScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/screens/home/HomeScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/classService.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/classService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
