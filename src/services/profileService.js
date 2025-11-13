@@ -4,15 +4,15 @@ import { useCallback } from 'react';
 export function useProfile() {
 
   const getUserDetail = useCallback(async () => {
-    try {
-      const { data } = await Api.get('/users/me');
-      console.log("✅ Usuario recibido:", data);
-      return data;
-    } catch (err) {
-      console.error("❌ Error al obtener /users/me:", err.response?.data || err.message);
-      throw err; // volvemos a lanzar para que se capture arriba
-    }
-  }, []);
+    const { data } = await Api.get('/users/me'); // SIN /api
+    return data;
+  }, [Api]);
 
-  return { getUserDetail };
+  const postChangesUser = useCallback(async(usuario)=>{
+    const {id, name, telefono, direccion, photoUrl, password, role, email} = usuario;
+    const {data} = await Api.put(`/users/${id}`, {id, name, telefono, direccion, photoUrl, password, role, email, validated: true})
+    console.log(data)
+  },[Api])
+
+  return { getUserDetail, postChangesUser};
 }

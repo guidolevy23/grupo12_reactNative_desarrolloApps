@@ -10,6 +10,7 @@ import ReservasScreen from "../screens/reservas/ReservasScreen"; // 👈 nueva i
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+const ProfileStack = createStackNavigator();
 
 // 🧩 Stack de Clases
 const HomeStack = () => {
@@ -38,6 +39,22 @@ const HomeStack = () => {
     </Stack.Navigator>
   );
 };
+function ProfileStackNavigator() {
+  return (
+    <ProfileStack.Navigator>
+      <ProfileStack.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          title: 'Perfil de usuario',
+          headerStyle: { backgroundColor: '#667eea' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+    </ProfileStack.Navigator>
+  );
+}
 
 const TabNavigator = () => {
   return (
@@ -74,13 +91,11 @@ const TabNavigator = () => {
 
       {/* 👤 PERFIL */}
       <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
+        name="ProfileTab"
+        component={ProfileStackNavigator}
         options={{
-          tabBarLabel: "Perfil",
-          tabBarIcon: ({ color }) => (
-            <Text style={{ fontSize: 24, color }}>👤</Text>
-          ),
+          tabBarLabel: 'Perfil',
+          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>👤</Text>,
         }}
       />
     </Tab.Navigator>
