@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { AuthContext } from "../../context/AuthContext";
 import { useProfile } from "../../services/profileService";
@@ -18,7 +20,7 @@ export default function ProfileScreen() {
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(null);
-  const [clases, setClases] = useState([]);          // mejor [] que undefined
+  const [clases, setClases] = useState([]);
   const [proximaClase, setProximaClase] = useState(null);
 
   const { getUserDetail, postChangesUser } = useProfile();
@@ -34,8 +36,8 @@ export default function ProfileScreen() {
     "https://i.pravatar.cc/300?img=7",
     "https://i.pravatar.cc/300?img=8",
   ];
+  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
-  // ---- helper para calcular la próxima clase ----
   const calcularProximaClase = (reservas) => {
     const ahora = new Date();
     let mejor = null;
@@ -47,13 +49,17 @@ export default function ProfileScreen() {
       if (diff >= 0 && diff < mejorDiff && clase.estado === "CONFIRMADA") {
         mejorDiff = diff;
         mejor = clase;
+        console.log(mejor)
       }
     });
-
+    const fechaCompleta = mejor.horario.split("T");
+    const horario = fechaCompleta[1];
+    const fechaSola = fechaCompleta[0].split("-")
+    const fechaOrdenada = [horario, fechaSola[2],meses[Number(fechaSola[1]) - 1], fechaSola[0]];
+    mejor.horario = fechaOrdenada.join(' '); 
     return mejor;
   };
 
-  // ---- carga user + reservas cada vez que el Perfil gana foco ----
   const cargarDatos = useCallback(async () => {
     try {
       const usuario = await getUserDetail();
@@ -104,140 +110,164 @@ export default function ProfileScreen() {
   const avatarUri = currentUser?.photoUrl || AVATARS[0];
 
   return (
-    <View style={styles.container}>
-      {/* Avatar + datos */}
-      <View style={styles.header}>
-        <Image source={{ uri: avatarUri }} style={styles.avatar} />
+    <KeyboardAvoidingView
+      style={styles.root}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.header}>
+          <Image source={{ uri: avatarUri }} style={styles.avatar} />
 
-        {editing ? (
-          <>
-            {/* Picker de Avatares */}
-            <View style={{ width: "100%" }}>
-              <Text style={styles.pickLabel}>Elegí tu avatar</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.avatarsRow}
-              >
-                {AVATARS.map((url) => {
-                  const selected = draft?.photoUrl === url;
-                  return (
-                    <TouchableOpacity
-                      key={url}
-                      onPress={() => setDraft({ ...draft, photoUrl: url })}
-                      style={[
-                        styles.avatarOption,
-                        selected && styles.avatarSelected,
-                      ]}
-                      activeOpacity={0.8}
-                    >
-                      <Image source={{ uri: url }} style={styles.avatarThumb} />
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
-            </View>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Nombre"
-              value={draft?.name || ""}
-              onChangeText={(n) => setDraft({ ...draft, name: n })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Telefono"
-              value={draft?.telefono || ""}
-              onChangeText={(t) => setDraft({ ...draft, telefono: t })}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Direccion"
-              value={draft?.direccion || ""}
-              onChangeText={(d) => setDraft({ ...draft, direccion: d })}
-            />
-          </>
-        ) : (
-          <>
-            <Text style={styles.name}>{user?.name}</Text>
-            <Text style={styles.email}>{user?.email}</Text>
-            <View style={styles.statsRow}>
-              <View className="statCard" style={styles.statCard}>
-                <Text style={styles.statNumber}>
-                  {user?.telefono ? user.telefono : "-"}
-                </Text>
-                <Text style={styles.statLabel}>Telefono</Text>
+          {editing ? (
+            <>
+              {/* Picker de Avatares */}
+              <View style={{ width: "100%" }}>
+                <Text style={styles.pickLabel}>Elegí tu avatar</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.avatarsRow}
+                >
+                  {AVATARS.map((url) => {
+                    const selected = draft?.photoUrl === url;
+                    return (
+                      <TouchableOpacity
+                        key={url}
+                        onPress={() => setDraft({ ...draft, photoUrl: url })}
+                        style={[
+                          styles.avatarOption,
+                          selected && styles.avatarSelected,
+                        ]}
+                        activeOpacity={0.8}
+                      >
+                        <Image
+                          source={{ uri: url }}
+                          style={styles.avatarThumb}
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
               </View>
-              <View style={styles.statCard}>
-                <Text style={styles.statNumber}>
-                  {user?.direccion ? user.direccion : "-"}
-                </Text>
-                <Text style={styles.statLabel}>Direccion</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Nombre"
+                value={draft?.name || ""}
+                onChangeText={(n) => setDraft({ ...draft, name: n })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Telefono"
+                value={draft?.telefono || ""}
+                onChangeText={(t) => setDraft({ ...draft, telefono: t })}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Direccion"
+                value={draft?.direccion || ""}
+                onChangeText={(d) => setDraft({ ...draft, direccion: d })}
+              />
+            </>
+          ) : (
+            <>
+              <Text style={styles.name}>{user?.name}</Text>
+              <Text style={styles.email}>{user?.email}</Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statCard}>
+                  <Text style={styles.statNumber}>
+                    {user?.telefono ? user.telefono : "-"}
+                  </Text>
+                  <Text style={styles.statLabel}>Telefono</Text>
+                </View>
+                <View style={styles.statCard}>
+                  <Text style={styles.statNumber}>
+                    {user?.direccion ? user.direccion : "-"}
+                  </Text>
+                  <Text style={styles.statLabel}>Direccion</Text>
+                </View>
               </View>
-            </View>
-          </>
-        )}
-      </View>
-
-      {/* Próxima reserva */}
-      <View style={styles.statsRow}>
-        <View style={styles.statCard}>
-          {proximaClase ? 
-          (<>
-            <Text style={styles.statNumber}>{proximaClase.courseName}</Text>
-            <Text style={styles.statNumber}>{proximaClase.branch}</Text>
-            <Text style={styles.statNumber}>{proximaClase.horario.replace("T", " ")}</Text>
-
-          </>
-
-          ):(<Text style={styles.statNumber}>
-            {proximaClase ? proximaClase.horario : "No tienes reservas proximas."}
-          </Text>)}          
-          <Text style={styles.statLabel}>Reserva más proxima</Text>
+            </>
+          )}
         </View>
-      </View>
 
-      {/* Acciones */}
-      <View style={styles.actions}>
-        {editing ? (
-          <>
-            <TouchableOpacity
-              style={[styles.btn, styles.primary]}
-              onPress={save}
-            >
-              <Text style={styles.btnTextPrimary}>Guardar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.btn, styles.outline]}
-              onPress={toggleEdit}
-            >
-              <Text style={styles.btnTextOutline}>Cancelar</Text>
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <TouchableOpacity
-              style={[styles.btn, styles.primary]}
-              onPress={toggleEdit}
-            >
-              <Text style={styles.btnTextPrimary}>Editar perfil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.btn, styles.danger]}
-              onPress={logout}
-            >
-              <Text style={styles.btnTextDanger}>Cerrar sesión</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-    </View>
+        {/* Próxima reserva */}
+        <View style={styles.statsRow}>
+          <View style={styles.statCard}>
+            {proximaClase ? (
+              <>
+                <Text style={styles.statNumber}>
+                  {proximaClase.courseName}
+                </Text>
+                <Text style={styles.statNumber}>{proximaClase.branch}</Text>
+                <Text style={styles.statNumber}>
+                  {proximaClase.horario}
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.statNumber}>
+                No tienes reservas proximas.
+              </Text>
+            )}
+            <Text style={styles.statLabel}>Reserva más proxima</Text>
+          </View>
+        </View>
+
+        {/* Acciones */}
+        <View style={styles.actions}>
+          {editing ? (
+            <>
+              <TouchableOpacity
+                style={[styles.btn, styles.primary]}
+                onPress={save}
+              >
+                <Text style={styles.btnTextPrimary}>Guardar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.btn, styles.outline]}
+                onPress={toggleEdit}
+              >
+                <Text style={styles.btnTextOutline}>Cancelar</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[styles.btn, styles.primary]}
+                onPress={toggleEdit}
+              >
+                <Text style={styles.btnTextPrimary}>Editar perfil</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.btn, styles.danger]}
+                onPress={logout}
+              >
+                <Text style={styles.btnTextDanger}>Cerrar sesión</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
-// estilos igual que los tuyos
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+
   container: {
+    // ya no la uso como root, pero la dejo por si la querés en otro lado
     flex: 1,
     padding: 20,
     backgroundColor: "#f5f5f5",
@@ -308,7 +338,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   actions: {
-    marginTop: "auto",
+    marginTop: 24, // antes "auto", ahora deja que el ScrollView maneje el espacio
     gap: 10,
     paddingTop: 20,
   },
