@@ -1,14 +1,17 @@
 
 import React, { useState, useContext } from 'react';
-import { View, Alert } from 'react-native';
-import { TextInput, Button, HelperText } from 'react-native-paper';
+import { View } from 'react-native';
+import { TextInput, Button, HelperText, Snackbar } from 'react-native-paper';
 import { AuthContext } from '../../../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
+  const [loginError, setLoginError] = useState(null);
   const [loading, setIsLoading] = useState(false)
+  const navigation = useNavigation();
   const { login } = useContext(AuthContext);
 
   const validate = () => {
@@ -32,7 +35,11 @@ const LoginForm = () => {
       try {
         await login(email, password);
       } catch (error) {
-        Alert.alert("Fallor al hacer el Login", error.message || "Something went wrong.");
+        if (error.message == 'USER_NOT_VALID') {
+          navigation.navigate("Otp", { email });
+        } else {
+          setLoginError("Fallo al intentar ingresar.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -67,6 +74,17 @@ const LoginForm = () => {
       <Button mode="contained" onPress={handleSubmit}>
         {loading ? "Ingresando..." : "Ingresar"} 
       </Button>
+      <Snackbar
+        visible={!!loginError}
+        onDismiss={() => setLoginError(null)}
+        duration={4000}
+        action={{
+          label: 'OK',
+          onPress: () => setLoginError(null),
+        }}
+      >
+        {loginError}
+      </Snackbar>
     </View>
   );
 };

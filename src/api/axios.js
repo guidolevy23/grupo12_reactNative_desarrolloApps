@@ -1,7 +1,6 @@
 import axios from "axios";
-import { Platform } from "react-native";
-import { getToken } from "../utils/tokenStorage";
-import { API_URL } from '@env';
+import { Platform, Alert } from "react-native";
+import { getToken  } from "../utils/tokenStorage";
 
 
 // Configuración de URL base según el entorno
@@ -48,6 +47,33 @@ Api.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// ✅ Interceptor global para manejar errores
+Api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const status = error.response.status;
+      const message =
+        error.response.data?.message || 'Ocurrió un error inesperado.';
+
+      switch (status) {
+        case 400:
+          Alert.alert('Solicitud incorrecta', message);
+          break;
+        case 500:
+          Alert.alert('Error del servidor', 'Intenta de nuevo más tarde.');
+          break;
+      }
+    } else if (error.request) {
+      Alert.alert('Error de conexión', 'Revisa tu conexión a internet.');
+    } else {
+      Alert.alert('Error inesperado', error.message);
+    }
+
     return Promise.reject(error);
   }
 );

@@ -7,42 +7,35 @@ import HomeScreen from "../screens/home/HomeScreen";
 import ClassDetailScreen from "../screens/home/ClassDetailScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import HistoryScreen from "../screens/history/HistoryScreen";
+import ReservasScreen from "../screens/reservas/ReservasScreen"; // 👈 nueva importación
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ProfileStack = createStackNavigator();
 const HistoryStack = createStackNavigator();
 
-// Stack Navigator para Home (incluye la lista y el detalle)
+// 🧩 Stack de Clases
 const HomeStack = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
         name="HomeList"
         component={HomeScreen}
-        options={{ 
+        options={{
           title: "Clases RitmoFit",
-          headerStyle: {
-            backgroundColor: "#667eea",
-          },
+          headerStyle: { backgroundColor: "#667eea" },
           headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
+          headerTitleStyle: { fontWeight: "bold" },
         }}
       />
       <Stack.Screen
         name="ClassDetail"
         component={ClassDetailScreen}
-        options={{ 
+        options={{
           title: "Detalle de Clase",
-          headerStyle: {
-            backgroundColor: "#667eea",
-          },
+          headerStyle: { backgroundColor: "#667eea" },
           headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
+          headerTitleStyle: { fontWeight: "bold" },
         }}
       />
     </Stack.Navigator>
@@ -91,16 +84,31 @@ const TabNavigator = () => {
         headerShown: false,
       }}
     >
+      {/* 🏋️ CLASES */}
       <Tab.Screen
         name="Home"
         component={HomeStack}
-        options={{ 
+        options={{
           tabBarLabel: "Clases",
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color }) => (
             <Text style={{ fontSize: 24, color }}>🏋️‍♂️</Text>
           ),
         }}
       />
+
+      {/* 📅 RESERVAS */}
+      <Tab.Screen
+        name="Reservas"
+        component={ReservasScreen}
+        options={{
+          tabBarLabel: "Reservas",
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24, color }}>📅</Text>
+          ),
+        }}
+      />
+
+      {/* 👤 PERFIL */}
       <Tab.Screen
         name="HistoryTab"
         component={HistoryStackNavigator}
@@ -111,7 +119,7 @@ const TabNavigator = () => {
       />
       <Tab.Screen
         name="ProfileTab"
-        component={ProfileStackNavigator} // 👈 antes: ProfileScreen directo
+        component={ProfileStackNavigator}
         options={{
           tabBarLabel: 'Perfil',
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>👤</Text>,

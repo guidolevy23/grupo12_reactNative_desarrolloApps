@@ -18,12 +18,12 @@ const LoginNavigator = () => {
         component={LoginScreen}
       />
       <Stack.Screen
-        name="Otp"
-        component={OtpScreen}
-      />
-      <Stack.Screen
         name="Registration"
         component={RegistrationScreen}
+      />
+      <Stack.Screen
+        name="Otp"
+        component={OtpScreen}
       />
     </Stack.Navigator>
   );
