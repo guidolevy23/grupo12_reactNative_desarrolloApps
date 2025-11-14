@@ -142,7 +142,27 @@ export default function HomeScreen() {
 
         <View style={styles.cardBody}>
           <Text style={styles.infoLabel}>🏢 {item.branch}</Text>
-          <Text style={styles.infoLabel}>⏰ {item.schedule}</Text>
+          {item.startsAt && (
+            <Text style={styles.infoLabel}>
+              📅 {new Date(item.startsAt).toLocaleDateString('es-AR', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric' 
+              })}
+            </Text>
+          )}
+          {item.startsAt && (
+            <Text style={styles.infoLabel}>
+              ⏰ {new Date(item.startsAt).toLocaleTimeString('es-AR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}
+              {item.endsAt && ` - ${new Date(item.endsAt).toLocaleTimeString('es-AR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+              })}`}
+            </Text>
+          )}
 
           {item.professor && (
             <Text style={styles.infoLabel}>👤 {item.professor}</Text>

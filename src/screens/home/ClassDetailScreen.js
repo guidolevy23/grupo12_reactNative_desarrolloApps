@@ -91,7 +91,6 @@ const handleReserve = async () => {
 
 
     Alert.alert("Reserva confirmada", "🎉 ¡Te anotaste correctamente!");
-    navigation.navigate("Reservas", { refresh: true });
 
   } catch (error) {
     console.log("❌ Error al reservar:", error);

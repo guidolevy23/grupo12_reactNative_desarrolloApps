@@ -30,9 +30,9 @@
 
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Linking, Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import AuthService from '../services/authService'; 
+import AuthService from '../services/authService';
 import { getToken, removeToken, saveToken } from '../utils/tokenStorage';
 
 // 1. Create the Context object
@@ -70,105 +70,140 @@ export const AuthProvider = ({ children }) => {
         return true;
       }
 
-      // 2. Verificar si el usuario tiene credenciales biométricas configuradas (enrolamiento)
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      if (!isEnrolled) {
-        console.log("⚠️ Usuario sin credenciales biométricas configuradas");
-        return new Promise((resolve) => {
-          Alert.alert(
-            "Configuración requerida",
-            "No tienes configurada la autenticación biométrica en tu dispositivo. Por favor, configura tu huella digital o Face ID en los ajustes del sistema.",
-            [
-              {
-                text: "Continuar sin biometría",
-                onPress: () => {
-                  setIsAuthenticated(true);
-                  setIsBiometricVerified(true);
-                  setIsLoading(false);
-                  resolve(true);
-                },
-              },
-            ]
-          );
-        });
-      }
+      // 2. Obtener los tipos de seguridad disponibles
+      const supportedTypes = await LocalAuthentication.supportedAuthenticationTypesAsync();
+      console.log("🔐 Tipos de autenticación soportados:", supportedTypes);
 
-      // 3. Solicitar autenticación biométrica
+      // 3. Intentar autenticar directamente (esto incluye PIN/patrón automáticamente)
       const result = await LocalAuthentication.authenticateAsync({
         promptMessage: "Autentícate para acceder a RitmoFit",
-        fallbackLabel: "Usar código",
+        fallbackLabel: "Usar PIN",
         cancelLabel: "Cancelar",
-        disableDeviceFallback: false,
+        disableDeviceFallback: false, // Permite usar PIN/patrón como alternativa
       });
 
       if (result.success) {
-        console.log("✅ Autenticación biométrica exitosa");
+        console.log("✅ Autenticación exitosa");
         setIsAuthenticated(true);
         setIsBiometricVerified(true);
         setIsLoading(false);
         return true;
       } else {
-        console.log("❌ Autenticación biométrica fallida");
-        return new Promise((resolve) => {
-          Alert.alert(
-            "Autenticación fallida",
-            "No se pudo verificar tu identidad. ¿Deseas intentar nuevamente?",
-            [
-              { 
-                text: "Reintentar", 
-                onPress: async () => {
-                  const retry = await authenticateWithBiometrics();
-                  resolve(retry);
-                }
-              },
-              { 
-                text: "Cancelar", 
-                style: "cancel",
-                onPress: async () => {
-                  await logout();
-                  setIsLoading(false);
-                  resolve(false);
-                }
-              },
-            ]
-          );
-        });
+        console.log("❌ Autenticación fallida o cancelada");
+
+        // Si el usuario canceló o falló, verificar si tiene algún método configurado
+        const securityLevel = await LocalAuthentication.getEnrolledLevelAsync();
+
+        if (securityLevel === LocalAuthentication.SecurityLevel.NONE) {
+          // No tiene ningún método de seguridad configurado
+          return new Promise((resolve) => {
+            Alert.alert(
+              "Seguridad Requerida",
+              "Para usar RitmoFit, necesitas configurar un método de seguridad en tu dispositivo (huella digital, Face ID, PIN o patrón).\n\n¿Deseas ir a Ajustes ahora?",
+              [
+                {
+                  text: "Cancelar",
+                  style: "cancel",
+                  onPress: async () => {
+                    await logout();
+                    setIsLoading(false);
+                    resolve(false);
+                  },
+                },
+                {
+                  text: "Ir a Ajustes",
+                  onPress: async () => {
+                    try {
+                      if (Platform.OS === 'ios') {
+                        await Linking.openURL('App-Prefs:TOUCHID_PASSCODE');
+                      } else {
+                        await Linking.sendIntent('android.settings.SECURITY_SETTINGS');
+                      }
+                    } catch (error) {
+                      await Linking.openSettings();
+                    }
+
+                    setTimeout(() => {
+                      Alert.alert(
+                        "¿Configuraste la seguridad?",
+                        "Una vez que hayas configurado tu método de seguridad, presiona Reintentar.",
+                        [
+                          {
+                            text: "Cerrar sesión",
+                            style: "cancel",
+                            onPress: async () => {
+                              await logout();
+                              setIsLoading(false);
+                              resolve(false);
+                            },
+                          },
+                          {
+                            text: "Reintentar",
+                            onPress: async () => {
+                              const retry = await authenticateWithBiometrics();
+                              resolve(retry);
+                            },
+                          },
+                        ]
+                      );
+                    }, 1000);
+                  },
+                },
+              ]
+            );
+          });
+        } else {
+          // Tiene seguridad configurada pero canceló o falló
+          return new Promise((resolve) => {
+            Alert.alert(
+              "Autenticación requerida",
+              "Necesitas autenticarte para continuar.",
+              [
+                {
+                  text: "Reintentar",
+                  onPress: async () => {
+                    const retry = await authenticateWithBiometrics();
+                    resolve(retry);
+                  }
+                },
+                {
+                  text: "Cerrar sesión",
+                  style: "cancel",
+                  onPress: async () => {
+                    await logout();
+                    setIsLoading(false);
+                    resolve(false);
+                  }
+                },
+              ]
+            );
+          });
+        }
       }
     } catch (error) {
-      console.error("Error en autenticación biométrica:", error);
-      return new Promise((resolve) => {
-        Alert.alert(
-          "Error",
-          "Ocurrió un error al intentar autenticar. Permitiendo acceso.",
-          [{ 
-            text: "OK", 
-            onPress: () => {
-              setIsAuthenticated(true);
-              setIsBiometricVerified(true);
-              setIsLoading(false);
-              resolve(true);
-            }
-          }]
-        );
-      });
+      console.error("Error en autenticación:", error);
+      setIsAuthenticated(true);
+      setIsBiometricVerified(true);
+      setIsLoading(false);
+      return true;
     }
   };
 
   // --- Authentication Functions ---
-  
+
   const login = async (email, password) => {
     try {
       const token = await AuthService.login(email, password);
       await saveToken(token);
-      
+
       // Después del login exitoso, solicitar autenticación biométrica
       const biometricSuccess = await authenticateWithBiometrics();
-      
+
       if (biometricSuccess) {
         setIsAuthenticated(true);
         setIsBiometricVerified(true);
       }
-      
+
       return true;
     } catch (e) {
       throw e;

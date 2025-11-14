@@ -2,13 +2,13 @@ import Api from "../api/axios";
 
 // 📋 Obtener reservas del usuario
 export async function getReservasUsuario(usuarioId) {
-  const { data } = await Api.get(`/api/reservas/usuario/${usuarioId}`);
+  const { data } = await Api.get(`/reservas/usuario/${usuarioId}`);
   return data;
 }
 
 export async function cancelarReserva(reservaId) {
   try {
-    await Api.delete(`/api/reservas/${reservaId}`);
+    await Api.delete(`/reservas/${reservaId}`);
   } catch (error) {
     const status = error.response?.status;
     const msg = error.response?.data?.message;
@@ -34,7 +34,7 @@ export async function cancelarReserva(reservaId) {
 export async function crearReserva(usuarioId, courseId) {
   try {
     const body = { usuarioId, courseId };
-    const { data } = await Api.post("/api/reservas", body);
+    const { data } = await Api.post("/reservas", body);
     return data;
   } catch (error) {
     const status = error.response?.status;

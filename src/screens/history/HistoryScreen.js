@@ -120,6 +120,12 @@ export default function HistoryScreen() {
   };
 
   const renderHistoryItem = ({ item }) => {
+    // Handle both old and new field names for backward compatibility
+    const courseName = item.courseName || item.nombreClase;
+    const branch = item.branch || item.nombreSede;
+    const durationMinutes = item.durationMinutes || item.duracionMinutos;
+    const professor = item.professor || item.profesor;
+
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -127,20 +133,22 @@ export default function HistoryScreen() {
           {renderStars(item.rating)}
         </View>
 
-        <Text style={styles.className}>{item.nombreClase}</Text>
+        <Text style={styles.className}>{courseName}</Text>
 
         <View style={styles.cardBody}>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>🏢 {item.nombreSede}</Text>
+            <Text style={styles.infoLabel}>🏢 {branch}</Text>
           </View>
 
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>⏱️ {item.duracionMinutos} min</Text>
-          </View>
-
-          {item.profesor && (
+          {durationMinutes && (
             <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>👤 {item.profesor}</Text>
+              <Text style={styles.infoLabel}>⏱️ {durationMinutes} min</Text>
+            </View>
+          )}
+
+          {professor && (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>👤 {professor}</Text>
             </View>
           )}
 
