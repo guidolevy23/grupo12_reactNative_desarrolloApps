@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Platform, Alert } from "react-native";
-import { getToken  } from "../utils/tokenStorage";
+import { getToken } from "../utils/tokenStorage";
+import { API_URL } from "@env";
 
 
 // Configuración de URL base según el entorno
