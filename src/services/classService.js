@@ -1,71 +1,72 @@
 import Api from "../api/axios";
 
-export const getClassList = async () => {
-  try {
-    
-    // Spring Data REST endpoint
-    console.log('🔗 Haciendo GET a: /api/courses');
-    const response = await Api.get('/courses');
-    console.log('✅ Lista response status:', response.status);
-    console.log('✅ Lista response data:', response.data);
-    
-    // Spring Data REST devuelve: { _embedded: { courses: [...] } }
-    let courses = [];
-    if (response.data._embedded && response.data._embedded.courses) {
-      console.log('📦 Procesando cursos desde _embedded');
-      courses = response.data._embedded.courses;
-    } else {
-      console.log('📦 Procesando data directamente');
-      courses = response.data;
+/** 🔧 Utilidad para parsear Spring Data REST */
+const parseCourses = (data) => {
+  let courses = [];
+
+  if (data._embedded?.courses) {
+    courses = data._embedded.courses;
+  } else {
+    courses = Array.isArray(data) ? data : [];
+  }
+
+  return courses.map((course) => {
+    let id = course.id;
+
+    if (!id && course._links?.self?.href) {
+      const match = course._links.self.href.match(/\/courses\/(\d+)$/);
+      id = match ? parseInt(match[1], 10) : null;
     }
-    
-    // Extraer ID de la URL de _links.self.href
-    // Spring Data REST: href = "http://192.168.0.12:8080/api/courses/1"
-    const coursesWithId = courses.map(course => {
-      let id = course.id; // Por si acaso ya tiene id
-      
-      if (!id && course._links?.self?.href) {
-        // Extraer el ID de la URL: .../courses/1 -> 1
-        const match = course._links.self.href.match(/\/courses\/(\d+)$/);
-        if (match) {
-          id = parseInt(match[1], 10);
-        }
-      }
-      
-      return { ...course, id };
-    });
-    
-    console.log('📦 Cursos con IDs:', coursesWithId);
-    return coursesWithId;
-  } catch (error) {
-    console.error('❌ Error al obtener lista de cursos:', error);
-    console.error('❌ Error response:', error.response?.data);
-    throw error;
-  }
+
+    return { ...course, id };
+  });
 };
 
+/** 🔹 Obtener TODAS las clases */
+export const getClassList = async () => {
+  const res = await Api.get("/courses");
+  return parseCourses(res.data);
+};
+
+/** 🔹 Detalle */
 export const getClassDetails = async (classId) => {
-  try {
-    const response = await Api.get(`/courses/${classId}`);
-    return response.data;
-  } catch (error) {
-    console.error('❌ Error al obtener detalles del curso:', error);
-    console.error('❌ Error response:', error.response?.data);
-    console.error('❌ Error status:', error.response?.status);
-    throw error;
-  }
+  const res = await Api.get(`/courses/${classId}`);
+  return res.data;
 };
 
-export const reserveClass = async (classId, usuarioId) => {
-  try {
-    // Tu backend espera: { usuario: { id }, course: { id } }
-    const response = await Api.post('/reservas', { 
-      usuario: { id: usuarioId },
-      course: { id: classId }  // classId del frontend = course.id del backend
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error al reservar clase:', error);
-    throw error;
-  }
+/** 🔹 Reservar */
+export const reserveClass = async (classId, usuarioId) =>
+  Api.post("/reservas", { usuario: { id: usuarioId }, course: { id: classId } });
+
+
+// ================================================================
+// 🔥🔥🔥 FILTROS (igual que Android) 🔥🔥🔥
+// ================================================================
+
+/** 🔹 Buscar por sede (branch) */
+export const getClassesByBranch = async (branch) => {
+  const res = await Api.get("/courses/search/byBranch", {
+    params: { branch },
+  });
+  return parseCourses(res.data);
+};
+
+/** 🔹 Buscar por disciplina (name) */
+export const getClassesByName = async (name) => {
+  const res = await Api.get("/courses/search/byName", {
+    params: { name },
+  });
+  return parseCourses(res.data);
+};
+
+/** 🔹 Buscar por fecha (yyyy-MM-dd) */
+export const getClassesByDate = async (date) => {
+  const start = `${date}T00:00:00`;
+  const end = `${date}T23:59:59`;
+
+  const res = await Api.get("/courses/search/byDateBetween", {
+    params: { start, end },
+  });
+
+  return parseCourses(res.data);
 };
