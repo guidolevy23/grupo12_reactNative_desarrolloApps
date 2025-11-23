@@ -15,6 +15,7 @@ import { AuthContext } from "../../context/AuthContext";
 import { useProfile } from "../../services/profileService";
 import { getReservasUsuario } from "../../services/reservaService";
 import { useFocusEffect } from "@react-navigation/native";
+import { processNotifications } from "../../services/notificationBackgroudTask";
 
 export default function ProfileScreen() {
   const [user, setUser] = useState(null);
@@ -247,6 +248,12 @@ export default function ProfileScreen() {
                 onPress={logout}
               >
                 <Text style={styles.btnTextDanger}>Cerrar sesión</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.btn, styles.danger]}
+                onPress={processNotifications}
+              >
+                <Text style={styles.btnTextDanger}>Noti</Text>
               </TouchableOpacity>
             </>
           )}
