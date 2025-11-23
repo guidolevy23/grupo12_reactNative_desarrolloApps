@@ -2,13 +2,14 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
 export default function ReservasCard({ reserva, onCancelar }) {
-  const { id, courseName, branch, horario, estado } = reserva;
+  const { id, course, estado } = reserva;
+  const { branch } = course;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>🏋️ {courseName}</Text>
-      <Text style={styles.text}>📍 {branch}</Text>
-      <Text style={styles.text}>🕓 {horario}</Text>
+      <Text style={styles.title}>🏋️ {course.name}</Text>
+      <Text style={styles.text}>📍 {branch.nombre}</Text>
+      <Text style={styles.text}>🕓 {course.startsAt}</Text>
 
       <Text
         style={[

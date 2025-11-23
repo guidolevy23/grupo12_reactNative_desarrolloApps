@@ -38,7 +38,7 @@ export default function HomeScreen() {
   // 🔥 EXTRACTORES (igual que Android → se derivan de los cursos)
   // ==================================================================
   const extractUniqueBranches = (courses) => {
-    const branches = courses.map(c => c.branch).filter(Boolean);
+    const branches = courses.map(c => c.branch.nombre).filter(Boolean);
     return [...new Set(branches)];
   };
 
@@ -141,7 +141,7 @@ export default function HomeScreen() {
         </View>
 
         <View style={styles.cardBody}>
-          <Text style={styles.infoLabel}>🏢 {item.branch}</Text>
+          <Text style={styles.infoLabel}>🏢 {item.branch.nombre}</Text>
           {item.startsAt && (
             <Text style={styles.infoLabel}>
               📅 {new Date(item.startsAt).toLocaleDateString('es-AR', { 
