@@ -8,9 +8,12 @@ import {
   RefreshControl,
   TouchableOpacity,
   Platform,
+  Alert,
 } from "react-native";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getAttendanceHistory } from "../../services/historyService";
+import { calificarAsistencia } from "../../services/ratingService";
+import RatingModal from "./components/RatingModal";
 
 export default function HistoryScreen() {
   const [history, setHistory] = useState([]);
@@ -24,6 +27,8 @@ export default function HistoryScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedClass, setSelectedClass] = useState(null);
 
   const fetchHistory = async () => {
     try {
@@ -40,31 +45,47 @@ export default function HistoryScreen() {
       console.error('❌ Error fetching history:', err);
       console.error('Error details:', err.message);
       setError(`Error al cargar el historial: ${err.message}`);
-      // Datos de ejemplo en caso de error (formato del backend)
+      // Datos de ejemplo en caso de error (formato actualizado con campos para calificar)
       setHistory([
         {
           id: 1,
-          nombreClase: "Funcional",
-          nombreSede: "Palermo",
+          courseName: "Funcional",
+          branch: "Palermo",
           fecha: "10/11/2025 18:00",
-          duracionMinutos: 60,
-          profesor: "Juan Pérez",
+          durationMinutes: 60,
+          professor: "Juan Pérez",
+          rating: null, // Sin calificar
+          comment: null,
         },
         {
           id: 2,
-          nombreClase: "Yoga",
-          nombreSede: "Belgrano",
+          courseName: "Yoga",
+          branch: "Belgrano",
           fecha: "08/11/2025 19:00",
-          duracionMinutos: 60,
-          profesor: "María González",
+          durationMinutes: 60,
+          professor: "María González",
+          rating: 5, // Ya calificada
+          comment: "Excelente clase, muy relajante",
         },
         {
           id: 3,
-          nombreClase: "Spinning",
-          nombreSede: "Palermo",
+          courseName: "Spinning",
+          branch: "Palermo",
           fecha: "05/11/2025 20:00",
           duracionMinutos: 45,
-          profesor: "Carlos Ruiz",
+          professor: "Carlos Ruiz",
+          rating: null, // Sin calificar
+          comment: null,
+        },
+        {
+          id: 4,
+          courseName: "HIIT",
+          branch: "Recoleta",
+          fecha: "03/11/2025 17:00",
+          durationMinutes: 45,
+          professor: "Ana Martínez",
+          rating: 4, // Ya calificada
+          comment: "Muy intensa pero efectiva",
         },
       ]);
     } finally {
@@ -100,6 +121,36 @@ export default function HistoryScreen() {
 
   const clearFilters = () => {
     setDateFilter({ startDate: null, endDate: null });
+  };
+
+  const handleRateClass = (classItem) => {
+    setSelectedClass(classItem);
+    setModalVisible(true);
+  };
+
+  const handleSubmitRating = async (rating, comment) => {
+    try {
+      console.log('📝 Enviando calificación:', { 
+        asistenciaId: selectedClass.id, 
+        rating, 
+        comment 
+      });
+
+      await calificarAsistencia(selectedClass.id, rating, comment);
+      
+      Alert.alert(
+        '¡Gracias por tu calificación! 🎉',
+        'Tu opinión nos ayuda a mejorar'
+      );
+
+      // Recargar historial para mostrar la calificación
+      fetchHistory();
+      setModalVisible(false);
+      setSelectedClass(null);
+    } catch (error) {
+      console.error('Error al calificar:', error);
+      Alert.alert('Error', error.message);
+    }
   };
 
   const formatDateDisplay = (isoDate) => {
@@ -158,6 +209,23 @@ export default function HistoryScreen() {
             </View>
           )}
         </View>
+
+        {/* Botón de calificar solo si no tiene rating */}
+        {!item.rating && (
+          <TouchableOpacity
+            style={styles.rateButton}
+            onPress={() => handleRateClass(item)}
+          >
+            <Text style={styles.rateButtonText}>⭐ Calificar clase</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Texto si ya fue calificada */}
+        {item.rating && (
+          <View style={styles.ratedContainer}>
+            <Text style={styles.ratedText}>✓ Ya calificaste esta clase</Text>
+          </View>
+        )}
       </View>
     );
   };
@@ -277,6 +345,17 @@ export default function HistoryScreen() {
             </Text>
           </View>
         }
+      />
+
+      {/* Modal de calificación */}
+      <RatingModal
+        visible={modalVisible}
+        onClose={() => {
+          setModalVisible(false);
+          setSelectedClass(null);
+        }}
+        onSubmit={handleSubmitRating}
+        classInfo={selectedClass}
       />
     </View>
   );
@@ -463,6 +542,32 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     color: "#666",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  rateButton: {
+    backgroundColor: "#667eea",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 15,
+    alignItems: "center",
+  },
+  rateButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
+  ratedContainer: {
+    backgroundColor: "#e8f5e9",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginTop: 15,
+    alignItems: "center",
+  },
+  ratedText: {
+    color: "#2e7d32",
     fontSize: 14,
     fontWeight: "600",
   },
