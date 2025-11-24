@@ -2,13 +2,15 @@ import Api from "../api/axios";
 
 // 📋 Obtener reservas del usuario
 export async function getReservasUsuario(usuarioId) {
-  const { data } = await Api.get(`/reservas/usuario/${usuarioId}`);
-  return data;
+  const { data } = await Api.get(`/reservations/search/byUser?userId=${usuarioId}`);
+  console.log(data._embedded.reservas)
+  return data._embedded.reservas;
 }
 
 export async function cancelarReserva(reservaId) {
   try {
-    await Api.delete(`/reservas/${reservaId}`);
+    console.log(reservaId)
+    await Api.delete(`/api/reservas/${reservaId}`);
   } catch (error) {
     const status = error.response?.status;
     const msg = error.response?.data?.message;

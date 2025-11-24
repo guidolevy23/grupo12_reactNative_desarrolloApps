@@ -153,7 +153,7 @@ const handleReserve = async () => {
         <Text style={styles.type}>{classData.name?.split(" ")[0] || "Clase"}</Text>
 
         <View style={styles.infoSection}>
-          <Info label="🏢 Sede:" value={classData.branch || "Sede Principal"} />
+          <Info label="🏢 Sede:" value={classData.branch.nombre|| "Sede Principal"} />
           <Info label="⏰ Horario:" value={formatDateTime(classData.startsAt)} />
           <Info label="👤 Profesor:" value={classData.professor || "Por asignar"} />
           <Info label="⏱️ Duración:" value={classData.duration || "60 min"} />
