@@ -45,49 +45,7 @@ export default function HistoryScreen() {
       console.error('❌ Error fetching history:', err);
       console.error('Error details:', err.message);
       setError(`Error al cargar el historial: ${err.message}`);
-      // Datos de ejemplo en caso de error (formato actualizado con campos para calificar)
-      setHistory([
-        {
-          id: 1,
-          courseName: "Funcional",
-          branch: "Palermo",
-          fecha: "10/11/2025 18:00",
-          durationMinutes: 60,
-          professor: "Juan Pérez",
-          rating: null, // Sin calificar
-          comment: null,
-        },
-        {
-          id: 2,
-          courseName: "Yoga",
-          branch: "Belgrano",
-          fecha: "08/11/2025 19:00",
-          durationMinutes: 60,
-          professor: "María González",
-          rating: 5, // Ya calificada
-          comment: "Excelente clase, muy relajante",
-        },
-        {
-          id: 3,
-          courseName: "Spinning",
-          branch: "Palermo",
-          fecha: "05/11/2025 20:00",
-          duracionMinutos: 45,
-          professor: "Carlos Ruiz",
-          rating: null, // Sin calificar
-          comment: null,
-        },
-        {
-          id: 4,
-          courseName: "HIIT",
-          branch: "Recoleta",
-          fecha: "03/11/2025 17:00",
-          durationMinutes: 45,
-          professor: "Ana Martínez",
-          rating: 4, // Ya calificada
-          comment: "Muy intensa pero efectiva",
-        },
-      ]);
+      setHistory([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -171,11 +129,11 @@ export default function HistoryScreen() {
   };
 
   const renderHistoryItem = ({ item }) => {
-    // Handle both old and new field names for backward compatibility
-    const courseName = item.courseName || item.nombreClase;
-    const branch = item.branch || item.nombreSede;
-    const durationMinutes = item.durationMinutes || item.duracionMinutos;
-    const professor = item.professor || item.profesor;
+    // Backend ahora usa siempre: courseName, branch (string), durationMinutes, professor
+    const courseName = item.courseName;
+    const branch = item.branch;
+    const durationMinutes = item.durationMinutes;
+    const professor = item.professor;
 
     return (
       <View style={styles.card}>

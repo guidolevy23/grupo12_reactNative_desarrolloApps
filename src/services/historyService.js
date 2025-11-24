@@ -7,10 +7,14 @@ const HistoryService = {
    */
   getCurrentUser: async () => {
     try {
+      console.log('👤 Attempting to get current user from /users/me');
       const response = await Api.get('/users/me');
+      console.log('✅ Current user response:', response.data);
       return response.data;
     } catch (error) {
-      console.error("Failed to fetch current user:", error);
+      console.error("❌ Failed to fetch current user:", error);
+      console.error("Error status:", error.response?.status);
+      console.error("Error data:", error.response?.data);
       throw new Error(error.response?.data?.message || 'Error al obtener usuario');
     }
   },
@@ -27,13 +31,16 @@ const HistoryService = {
       
       let usuarioId;
       try {
-        // Intentar obtener el usuario actual
+        // Intentar obtener el usuario actual desde /api/users/me
         const user = await HistoryService.getCurrentUser();
         console.log('👤 Current user:', user);
-        usuarioId = user.id;
+        usuarioId = user.id || user.idUsuario;
+        console.log('✅ UserId from /users/me:', usuarioId);
       } catch (userError) {
         console.warn('⚠️ Could not get user from /users/me, trying to decode JWT...');
-        // Si falla, intentar decodificar el JWT para obtener el userId
+        console.error('getUserError:', userError.message);
+        
+        // Si falla /users/me, intentar decodificar el JWT
         const { getToken } = require('../utils/tokenStorage');
         const token = await getToken();
         
@@ -48,12 +55,18 @@ const HistoryService = {
           const payload = JSON.parse(jsonPayload);
           console.log('🔓 JWT payload:', payload);
           
-          // El backend puede usar 'sub', 'userId', 'id', etc.
-          usuarioId = payload.userId || payload.id || payload.sub;
-          
-          if (!usuarioId) {
-            console.error('❌ Could not extract userId from JWT:', payload);
-            throw new Error('No se pudo obtener el ID de usuario');
+          // IMPORTANTE: El backend JWT tiene 'sub' con el email, no el ID
+          // Necesitamos usar el endpoint /users/me, pero si falla, usar hardcoded para admin
+          if (payload.sub === 'admin@root.com') {
+            usuarioId = 1; // Usuario admin tiene ID 1
+            console.log('✅ Using hardcoded userId for admin: 1');
+          } else {
+            // Para otros usuarios, intentar extraer del token
+            usuarioId = payload.userId || payload.id;
+            if (!usuarioId) {
+              console.error('❌ Could not extract userId from JWT:', payload);
+              throw new Error('No se pudo obtener el ID de usuario. El token solo contiene el email.');
+            }
           }
           
           console.log('✅ Extracted userId from JWT:', usuarioId);
@@ -76,6 +89,7 @@ const HistoryService = {
 
       // Si no hay filtros, obtener historial completo
       console.log(`📋 Fetching complete history for user ${usuarioId}`);
+      console.log(`📍 Full URL: ${Api.defaults.baseURL}/historial/${usuarioId}`);
       const response = await Api.get(`/historial/${usuarioId}`);
       console.log('✅ Complete history response:', response.data);
       return response.data;
@@ -83,6 +97,19 @@ const HistoryService = {
       console.error("❌ Failed to fetch attendance history:", error);
       console.error("Error response:", error.response?.data);
       console.error("Error status:", error.response?.status);
+      console.error("Error config:", error.config?.url);
+      
+      // Mensajes más descriptivos según el tipo de error
+      if (error.response?.status === 404) {
+        throw new Error('Endpoint de historial no encontrado. Verificá que el backend esté corriendo.');
+      } else if (error.response?.status === 401 || error.response?.status === 403) {
+        throw new Error('No tenés autorización. Iniciá sesión nuevamente.');
+      } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        throw new Error('Timeout: El servidor no responde. Verificá tu conexión.');
+      } else if (error.message.includes('Network Error') || !error.response) {
+        throw new Error('No se puede conectar al servidor. Verificá que el backend esté corriendo en http://10.0.2.2:8080');
+      }
+      
       throw new Error(error.response?.data?.message || error.message || 'Error al cargar el historial');
     }
   },

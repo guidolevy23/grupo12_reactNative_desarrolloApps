@@ -42,8 +42,15 @@ const Api = axios.create({
 Api.interceptors.request.use(
   async (config) => {
     const token = await getToken();
+    console.log('🔑 Token retrieved for request:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
+    console.log('📡 Request URL:', config.url);
+    console.log('📡 Full URL:', `${config.baseURL}${config.url}`);
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('✅ Authorization header set');
+    } else {
+      console.warn('⚠️ NO TOKEN FOUND - Request will be sent without auth');
     }
     return config;
   },

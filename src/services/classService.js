@@ -1,4 +1,27 @@
 import Api from "../api/axios";
+import axios from "axios";
+
+// Crear instancia separada para Spring Data REST (sin /api)
+const SpringDataApi = axios.create({
+  baseURL: 'http://10.0.2.2:8080',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Interceptor para agregar token a Spring Data REST
+SpringDataApi.interceptors.request.use(
+  async (config) => {
+    const { getToken } = require('../utils/tokenStorage');
+    const token = await getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 /** 🔧 Utilidad para parsear Spring Data REST */
 const parseCourses = (data) => {
@@ -24,13 +47,13 @@ const parseCourses = (data) => {
 
 /** 🔹 Obtener TODAS las clases */
 export const getClassList = async () => {
-  const res = await Api.get("/courses");
+  const res = await SpringDataApi.get("/courses");
   return parseCourses(res.data);
 };
 
 /** 🔹 Detalle */
 export const getClassDetails = async (classId) => {
-  const res = await Api.get(`/courses/${classId}`);
+  const res = await SpringDataApi.get(`/courses/${classId}`);
   return res.data;
 };
 
@@ -45,7 +68,7 @@ export const reserveClass = async (classId, usuarioId) =>
 
 /** 🔹 Buscar por sede (branch) */
 export const getClassesByBranch = async (branch) => {
-  const res = await Api.get("/courses/search/byBranch", {
+  const res = await SpringDataApi.get("/courses/search/byBranch", {
     params: { branch },
   });
   return parseCourses(res.data);
@@ -53,7 +76,7 @@ export const getClassesByBranch = async (branch) => {
 
 /** 🔹 Buscar por disciplina (name) */
 export const getClassesByName = async (name) => {
-  const res = await Api.get("/courses/search/byName", {
+  const res = await SpringDataApi.get("/courses/search/byName", {
     params: { name },
   });
   return parseCourses(res.data);
@@ -64,7 +87,7 @@ export const getClassesByDate = async (date) => {
   const start = `${date}T00:00:00`;
   const end = `${date}T23:59:59`;
 
-  const res = await Api.get("/courses/search/byDateBetween", {
+  const res = await SpringDataApi.get("/courses/search/byDateBetween", {
     params: { start, end },
   });
 

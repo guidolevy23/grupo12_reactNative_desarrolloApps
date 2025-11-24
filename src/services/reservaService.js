@@ -10,7 +10,7 @@ export async function getReservasUsuario(usuarioId) {
 export async function cancelarReserva(reservaId) {
   try {
     console.log(reservaId)
-    await Api.delete(`/api/reservas/${reservaId}`);
+    await Api.delete(`/reservas/${reservaId}`);
   } catch (error) {
     const status = error.response?.status;
     const msg = error.response?.data?.message;
