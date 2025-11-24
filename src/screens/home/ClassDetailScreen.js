@@ -13,6 +13,7 @@ import { getClassDetails } from "../../services/classService";
 import { crearReserva } from "../../services/reservaService";
 import { useProfile } from "../../services/profileService";
 import { getCupos, initCupos, incrementarCupo } from "../../services/cuposService";
+import { openMapsByCoords } from "../../utils/mapsLinking";
 
 
 export default function ClassDetailScreen({ route }) {
@@ -154,7 +155,8 @@ const handleReserve = async () => {
         <Text style={styles.type}>{classData.name?.split(" ")[0] || "Clase"}</Text>
 
         <View style={styles.infoSection}>
-          <Info label="🏢 Sede:" value={classData.branch || "Sede Principal"} />
+          <Info label="🏢 Sede:" value={classData.branch?.nombre || "Sede Principal"} onPress={() =>
+          openMapsByCoords(classData.branch?.lat, classData.branch?.lng)}/>
           <Info label="⏰ Horario:" value={formatDateTime(classData.startsAt)} />
           <Info label="👤 Profesor:" value={classData.professor || "Por asignar"} />
           <Info label="⏱️ Duración:" value={classData.duration || "60 min"} />
@@ -190,12 +192,25 @@ const handleReserve = async () => {
   );
 }
 
-const Info = ({ label, value }) => (
-  <View style={styles.infoRow}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value}>{value}</Text>
-  </View>
-);
+const Info = ({ label, value, onPress }) => {
+  const content = (
+    <View style={styles.infoRow}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
+    </View>
+  );
+
+  // Si tiene onPress → lo vuelvo presionable
+  if (onPress) {
+    return (
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
@@ -218,4 +233,16 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 10, color: "#666", fontSize: 16 },
   button: { backgroundColor: "#667eea", padding: 15, borderRadius: 10, alignItems: "center", minWidth: 150 },
   buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  mapButton: {
+    marginTop: 18,
+    backgroundColor: "#667eea",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  mapButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 });
