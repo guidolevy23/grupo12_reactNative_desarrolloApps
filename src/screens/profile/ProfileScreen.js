@@ -15,6 +15,8 @@ import { AuthContext } from "../../context/AuthContext";
 import { useProfile } from "../../services/profileService";
 import { getReservasUsuario } from "../../services/reservaService";
 import { useFocusEffect } from "@react-navigation/native";
+import { processNotifications } from "../../services/notificationBackgroudTask";
+import { openMapsByCoords } from "../../utils/mapsLinking";
 
 export default function ProfileScreen() {
   const [user, setUser] = useState(null);
@@ -51,11 +53,19 @@ export default function ProfileScreen() {
         mejor = clase;
       }
     });
+
+    if (!mejor) return null; // 👈 importantísimo
+
     const fechaCompleta = mejor.course.startsAt.split("T");
-    const horario = fechaCompleta[1];
-    const fechaSola = fechaCompleta[0].split("-")
-    const fechaOrdenada = [horario, fechaSola[2],meses[Number(fechaSola[1]) - 1], fechaSola[0]];
-    mejor.horario = fechaOrdenada.join(' '); 
+    const horario = fechaCompleta[1].slice(0, 5); // HH:MM
+    const fechaSola = fechaCompleta[0].split("-");
+    const fechaOrdenada = [
+      horario,
+      fechaSola[2],
+      meses[Number(fechaSola[1]) - 1],
+      fechaSola[0],
+    ];
+    mejor.horario = fechaOrdenada.join(" ");
     return mejor;
   };
 
@@ -66,11 +76,12 @@ export default function ProfileScreen() {
       setUser(usuario);
 
       const reservas = await getReservasUsuario(usuario.id);
+      console.log("Las reservas son las siguientes:", reservas)
       setClases(reservas || []);
 
       const proxima = calcularProximaClase(reservas || []);
       setProximaClase(proxima);
-      console.log("LA PROXIMA CLASE",proxima)
+      console.log("Los datos de proxima clase son:",proxima)
     } catch (e) {
       console.log("Error cargando datos de perfil:", e);
     }
@@ -82,6 +93,8 @@ export default function ProfileScreen() {
       (async () => {
         if (!alive) return;
         await cargarDatos();
+        console.log("Proxima clase:", proximaClase)
+        console.log("Todas las reservas:", clases)
       })();
       return () => {
         alive = false;
@@ -203,7 +216,9 @@ export default function ProfileScreen() {
                   {proximaClase.course.name}
                 </Text>
                 {/* ACA ME QUEDE, deberia ver como viene la sede en el proximaClase para mostrarlo */}
-                <Text style={styles.statNumber}>{proximaClase.branch}</Text>
+                <TouchableOpacity onPress={() => openMapsByCoords(proximaClase.course.branch?.lat, proximaClase.course.branch?.lng)}>
+                  <Text style={[styles.statNumber, { textDecorationLine: "underline", color: "#3366ff" }]}>{proximaClase.course.branch.nombre}</Text>
+                </TouchableOpacity>
                 <Text style={styles.statNumber}>
                   {proximaClase.horario}
                 </Text>
@@ -247,6 +262,12 @@ export default function ProfileScreen() {
                 onPress={logout}
               >
                 <Text style={styles.btnTextDanger}>Cerrar sesión</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.btn, styles.danger]}
+                onPress={processNotifications}
+              >
+                <Text style={styles.btnTextDanger}>Noti</Text>
               </TouchableOpacity>
             </>
           )}

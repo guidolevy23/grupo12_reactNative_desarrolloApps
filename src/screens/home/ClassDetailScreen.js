@@ -92,7 +92,6 @@ const handleReserve = async () => {
 
 
     Alert.alert("Reserva confirmada", "🎉 ¡Te anotaste correctamente!");
-    navigation.navigate("Reservas", { refresh: true });
 
   } catch (error) {
     console.log("❌ Error al reservar:", error);
@@ -193,23 +192,22 @@ const handleReserve = async () => {
 }
 
 const Info = ({ label, value, onPress }) => {
-  const content = (
+  return (
     <View style={styles.infoRow}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+
+      {onPress ? (
+        <Text
+          style={[styles.value, styles.valueLink]}
+          onPress={onPress}
+        >
+          {value}
+        </Text>
+      ) : (
+        <Text style={styles.value}>{value}</Text>
+      )}
     </View>
   );
-
-  // Si tiene onPress → lo vuelvo presionable
-  if (onPress) {
-    return (
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-        {content}
-      </TouchableOpacity>
-    );
-  }
-
-  return content;
 };
 
 const styles = StyleSheet.create({
@@ -222,6 +220,7 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#f0f0f0" },
   label: { fontSize: 16, fontWeight: "600", color: "#333" },
   value: { fontSize: 16, color: "#666" },
+  valueLink: { color: "#3366ff", textDecorationLine: "underline"},
   descriptionContainer: { marginTop: 15, paddingTop: 15, borderTopWidth: 1, borderTopColor: "#f0f0f0" },
   description: { fontSize: 14, color: "#666", marginTop: 10, lineHeight: 22 },
   reserveButton: { backgroundColor: "#667eea", padding: 18, borderRadius: 12, alignItems: "center", marginBottom: 15, shadowColor: "#667eea", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
