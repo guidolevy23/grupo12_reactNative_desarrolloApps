@@ -126,22 +126,39 @@ const handleReserve = async () => {
 
   if (!classData) return null;
 
-  const formatDateTime = (dateStr) => {
-    if (!dateStr) return "Por confirmar";
-    try {
-      const date = new Date(dateStr);
-      const dateFormatted = date.toLocaleDateString("es-AR", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-      const time = date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-      return `${dateFormatted} - ${time}`;
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatDate = (dateStr) => {
+  if (!dateStr) return "Por confirmar";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("es-AR", {
+      weekday: "long",   // viernes
+      year: "numeric",   // 2025
+      month: "long",     // diciembre
+      day: "numeric",    // 12
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+const formatTimeRange = (startStr, endStr) => {
+  if (!startStr) return "Por confirmar";
+  try {
+    const opts = { hour: "2-digit", minute: "2-digit" };
+
+    const start = new Date(startStr);
+    const startText = start.toLocaleTimeString("es-AR", opts);
+
+    if (!endStr) return startText; // solo inicio
+
+    const end = new Date(endStr);
+    const endText = end.toLocaleTimeString("es-AR", opts);
+
+    return `${startText} - ${endText}`;
+  } catch {
+    return startStr;
+  }
+};
 
   const availableSpots = (classData.capacity || 20) - (classData.currentEnrollment || 0);
 
@@ -154,7 +171,8 @@ const handleReserve = async () => {
         <View style={styles.infoSection}>
           <Info label="🏢 Sede:" value={classData.branch?.nombre || "Sede Principal"} onPress={() =>
           openMapsByCoords(classData.branch?.lat, classData.branch?.lng)}/>
-          <Info label="⏰ Horario:" value={formatDateTime(classData.startsAt)} />
+          <Info label="⏰ Horario:" value={formatTimeRange(classData.startsAt, classData.endsAt)}/>
+          <Info label="📅 Fecha:" value={formatDate(classData.startsAt)}/>
           <Info label="👤 Profesor:" value={classData.professor || "Por asignar"} />
           <Info label="⏱️ Duración:" value={classData.duration || "60 min"} />
           <Info
@@ -162,10 +180,10 @@ const handleReserve = async () => {
             value={availableSpots > 0 ? `${availableSpots} lugares` : "Clase llena"}
           />
           {classData.description && (
-            <View style={styles.descriptionContainer}>
-              <Text style={styles.label}>📝 Descripción:</Text>
+            <>
+              <Text style={[styles.label,{paddingTop:12}]}>📝 Descripción:</Text>
               <Text style={styles.description}>{classData.description}</Text>
-            </View>
+            </>
           )}
         </View>
 
