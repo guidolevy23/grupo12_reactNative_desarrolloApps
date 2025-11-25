@@ -21,7 +21,8 @@ export default function NoticiasScreen() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Image source={{ uri: item.imagenUrl }} style={styles.image} />
+            <Image source={{ uri: item.image || item.imagen || item.imagenUrl }} style={styles.image} />
+
             <Text style={styles.title}>{item.titulo}</Text>
             <Text style={styles.desc}>{item.descripcion}</Text>
             <Text style={styles.fecha}>{item.fecha}</Text>
