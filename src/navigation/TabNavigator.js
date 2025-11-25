@@ -8,11 +8,15 @@ import ClassDetailScreen from "../screens/home/ClassDetailScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import HistoryScreen from "../screens/history/HistoryScreen";
 import ReservasScreen from "../screens/reservas/ReservasScreen"; // 👈 nueva importación
+import NoticiasScreen from "../screens/noticias/NoticiasScreen";
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ProfileStack = createStackNavigator();
 const HistoryStack = createStackNavigator();
+const NoticiasStack = createStackNavigator();
+
 
 // 🧩 Stack de Clases
 const HomeStack = () => {
@@ -75,6 +79,27 @@ function HistoryStackNavigator() {
   );
 }
 
+
+
+function NoticiasStackNavigator() {
+  return (
+    <NoticiasStack.Navigator>
+      <NoticiasStack.Screen
+        name="Noticias"
+        component={NoticiasScreen}
+        options={{
+          title: "Noticias",
+          headerStyle: { backgroundColor: "#667eea" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+    </NoticiasStack.Navigator>
+  );
+}
+
+
+
 const TabNavigator = () => {
   return (
     <Tab.Navigator
@@ -107,6 +132,18 @@ const TabNavigator = () => {
           ),
         }}
       />
+
+      <Tab.Screen
+        name="NoticiasTab"
+        component={NoticiasStackNavigator}
+        options={{
+          tabBarLabel: "Noticias",
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24, color }}>📰</Text>
+          ),
+        }}
+      />
+
 
       {/* 👤 PERFIL */}
       <Tab.Screen
