@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { openMapsByCoords } from "../../../utils/mapsLinking";
 
 export default function ReservasCard({ reserva, onCancelar }) {
   const { id, course, estado } = reserva;
@@ -8,7 +9,10 @@ export default function ReservasCard({ reserva, onCancelar }) {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>🏋️ {course.name}</Text>
-      <Text style={styles.text}>📍 {branch.nombre}</Text>
+      <TouchableOpacity style={styles.flex} onPress={() => openMapsByCoords(branch?.lat, branch?.lng)}>
+        <Text style={styles.text} >📍</Text> 
+        <Text style={[styles.text, { textDecorationLine: "underline", color: "#3366ff" }]}>{branch.nombre}</Text>
+      </TouchableOpacity>
       <Text style={styles.text}>🕓 {course.startsAt}</Text>
 
       <Text
@@ -80,4 +84,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "600",
   },
+  flex:{
+    display: "flex",
+    flexDirection: "row"
+  }
 });
