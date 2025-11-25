@@ -30,9 +30,7 @@ export default function ClassDetailScreen({ route }) {
     const fetchClassDetails = async () => {
       try {
         setLoading(true);
-        console.log("🔍 Cargando detalles para classId:", classId);
         const details = await getClassDetails(classId);
-        console.log("✅ Detalles recibidos:", JSON.stringify(details, null, 2));
 
         // inicializo cupos simulados
         const cupos = await initCupos(
