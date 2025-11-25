@@ -76,12 +76,10 @@ export default function ProfileScreen() {
       setUser(usuario);
 
       const reservas = await getReservasUsuario(usuario.id);
-      console.log("Las reservas son las siguientes:", reservas)
       setClases(reservas || []);
 
       const proxima = calcularProximaClase(reservas || []);
       setProximaClase(proxima);
-      console.log("Los datos de proxima clase son:",proxima)
     } catch (e) {
       console.log("Error cargando datos de perfil:", e);
     }
@@ -93,8 +91,6 @@ export default function ProfileScreen() {
       (async () => {
         if (!alive) return;
         await cargarDatos();
-        console.log("Proxima clase:", proximaClase)
-        console.log("Todas las reservas:", clases)
       })();
       return () => {
         alive = false;
