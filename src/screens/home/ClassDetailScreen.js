@@ -13,6 +13,7 @@ import { getClassDetails } from "../../services/classService";
 import { crearReserva } from "../../services/reservaService";
 import { useProfile } from "../../services/profileService";
 import { getCupos, initCupos, incrementarCupo } from "../../services/cuposService";
+import { openMapsByCoords } from "../../utils/mapsLinking";
 
 
 export default function ClassDetailScreen({ route }) {
@@ -29,9 +30,7 @@ export default function ClassDetailScreen({ route }) {
     const fetchClassDetails = async () => {
       try {
         setLoading(true);
-        console.log("🔍 Cargando detalles para classId:", classId);
         const details = await getClassDetails(classId);
-        console.log("✅ Detalles recibidos:", JSON.stringify(details, null, 2));
 
         // inicializo cupos simulados
         const cupos = await initCupos(
@@ -127,22 +126,39 @@ const handleReserve = async () => {
 
   if (!classData) return null;
 
-  const formatDateTime = (dateStr) => {
-    if (!dateStr) return "Por confirmar";
-    try {
-      const date = new Date(dateStr);
-      const dateFormatted = date.toLocaleDateString("es-AR", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-      const time = date.toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
-      return `${dateFormatted} - ${time}`;
-    } catch {
-      return dateStr;
-    }
-  };
+  const formatDate = (dateStr) => {
+  if (!dateStr) return "Por confirmar";
+  try {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("es-AR", {
+      weekday: "long",   // viernes
+      year: "numeric",   // 2025
+      month: "long",     // diciembre
+      day: "numeric",    // 12
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+const formatTimeRange = (startStr, endStr) => {
+  if (!startStr) return "Por confirmar";
+  try {
+    const opts = { hour: "2-digit", minute: "2-digit" };
+
+    const start = new Date(startStr);
+    const startText = start.toLocaleTimeString("es-AR", opts);
+
+    if (!endStr) return startText; // solo inicio
+
+    const end = new Date(endStr);
+    const endText = end.toLocaleTimeString("es-AR", opts);
+
+    return `${startText} - ${endText}`;
+  } catch {
+    return startStr;
+  }
+};
 
   const availableSpots = (classData.capacity || 20) - (classData.currentEnrollment || 0);
 
@@ -153,8 +169,10 @@ const handleReserve = async () => {
         <Text style={styles.type}>{classData.name?.split(" ")[0] || "Clase"}</Text>
 
         <View style={styles.infoSection}>
-          <Info label="🏢 Sede:" value={classData.branch.nombre|| "Sede Principal"} />
-          <Info label="⏰ Horario:" value={formatDateTime(classData.startsAt)} />
+          <Info label="🏢 Sede:" value={classData.branch?.nombre || "Sede Principal"} onPress={() =>
+          openMapsByCoords(classData.branch?.lat, classData.branch?.lng)}/>
+          <Info label="⏰ Horario:" value={formatTimeRange(classData.startsAt, classData.endsAt)}/>
+          <Info label="📅 Fecha:" value={formatDate(classData.startsAt)}/>
           <Info label="👤 Profesor:" value={classData.professor || "Por asignar"} />
           <Info label="⏱️ Duración:" value={classData.duration || "60 min"} />
           <Info
@@ -162,10 +180,10 @@ const handleReserve = async () => {
             value={availableSpots > 0 ? `${availableSpots} lugares` : "Clase llena"}
           />
           {classData.description && (
-            <View style={styles.descriptionContainer}>
-              <Text style={styles.label}>📝 Descripción:</Text>
+            <>
+              <Text style={[styles.label,{paddingTop:12}]}>📝 Descripción:</Text>
               <Text style={styles.description}>{classData.description}</Text>
-            </View>
+            </>
           )}
         </View>
 
@@ -189,12 +207,24 @@ const handleReserve = async () => {
   );
 }
 
-const Info = ({ label, value }) => (
-  <View style={styles.infoRow}>
-    <Text style={styles.label}>{label}</Text>
-    <Text style={styles.value}>{value}</Text>
-  </View>
-);
+const Info = ({ label, value, onPress }) => {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.label}>{label}</Text>
+
+      {onPress ? (
+        <Text
+          style={[styles.value, styles.valueLink]}
+          onPress={onPress}
+        >
+          {value}
+        </Text>
+      ) : (
+        <Text style={styles.value}>{value}</Text>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
@@ -206,6 +236,7 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#f0f0f0" },
   label: { fontSize: 16, fontWeight: "600", color: "#333" },
   value: { fontSize: 16, color: "#666" },
+  valueLink: { color: "#3366ff", textDecorationLine: "underline"},
   descriptionContainer: { marginTop: 15, paddingTop: 15, borderTopWidth: 1, borderTopColor: "#f0f0f0" },
   description: { fontSize: 14, color: "#666", marginTop: 10, lineHeight: 22 },
   reserveButton: { backgroundColor: "#667eea", padding: 18, borderRadius: 12, alignItems: "center", marginBottom: 15, shadowColor: "#667eea", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 5 },
@@ -217,4 +248,16 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 10, color: "#666", fontSize: 16 },
   button: { backgroundColor: "#667eea", padding: 15, borderRadius: 10, alignItems: "center", minWidth: 150 },
   buttonText: { color: "white", fontSize: 16, fontWeight: "bold" },
+  mapButton: {
+    marginTop: 18,
+    backgroundColor: "#667eea",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  mapButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 });

@@ -7,6 +7,15 @@ import {
   ScrollView,
 } from "react-native";
 
+// 👇 helper para mostrar la fecha linda
+const MESES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const [anio, mes, dia] = dateStr.split("-"); // "2025-12-12" → ["2025","12","12"]
+  return `${dia} ${MESES[Number(mes) - 1]} ${anio}`; // "12 Dic 2025"
+};
+
 export default function Filtros({
   onApply,
   branches = [],
@@ -55,10 +64,7 @@ export default function Filtros({
           disciplines.map((d) => (
             <TouchableOpacity
               key={d}
-              style={[
-                styles.chip,
-                discipline === d && styles.chipActive,
-              ]}
+              style={[styles.chip, discipline === d && styles.chipActive]}
               onPress={() => setDiscipline(d)}
             >
               <Text
@@ -84,7 +90,7 @@ export default function Filtros({
             <TouchableOpacity
               key={dt}
               style={[styles.chip, date === dt && styles.chipActive]}
-              onPress={() => setDate(dt)}
+              onPress={() => setDate(dt)} // guardo el ISO crudo
             >
               <Text
                 style={[
@@ -92,7 +98,7 @@ export default function Filtros({
                   date === dt && styles.chipTextActive,
                 ]}
               >
-                {dt}
+                {formatDate(dt)} {/* 👈 acá solo lo mostramos lindo */}
               </Text>
             </TouchableOpacity>
           ))
