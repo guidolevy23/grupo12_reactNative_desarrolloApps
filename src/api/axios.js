@@ -21,7 +21,7 @@ const getBaseURL = () => {
     if (Platform.OS === 'android') {
       // Para emulador Android: 10.0.2.2 apunta a localhost de la máquina host
       // Para dispositivo físico: usa tu IP local (ej: 192.168.0.165)
-      return 'http://10.0.2.2:8080/api';  // Emulador por defecto
+      return 'http://192.168.0.165:8080/api';  // IP Local para dispositivo físico
     }
     // iOS simulator puede usar localhost
     return 'http://localhost:8080/api';

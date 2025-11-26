@@ -24,7 +24,7 @@ const HistoryService = {
   getAttendanceHistory: async (startDate = null, endDate = null) => {
     try {
       console.log('🔍 Getting current user...');
-      
+
       let usuarioId;
       try {
         // Intentar obtener el usuario actual
@@ -36,26 +36,26 @@ const HistoryService = {
         // Si falla, intentar decodificar el JWT para obtener el userId
         const { getToken } = require('../utils/tokenStorage');
         const token = await getToken();
-        
+
         if (token) {
           // Decodificar JWT (simple, sin verificar firma)
           const base64Url = token.split('.')[1];
           const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-          const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
           }).join(''));
-          
+
           const payload = JSON.parse(jsonPayload);
           console.log('🔓 JWT payload:', payload);
-          
+
           // El backend puede usar 'sub', 'userId', 'id', etc.
           usuarioId = payload.userId || payload.id || payload.sub;
-          
+
           if (!usuarioId) {
             console.error('❌ Could not extract userId from JWT:', payload);
             throw new Error('No se pudo obtener el ID de usuario');
           }
-          
+
           console.log('✅ Extracted userId from JWT:', usuarioId);
         } else {
           throw new Error('No hay token de autenticación');
@@ -65,7 +65,7 @@ const HistoryService = {
       // Si hay filtros de fecha, usar el endpoint de filtrado
       if (startDate || endDate) {
         console.log('📅 Fetching filtered history:', { usuarioId, startDate, endDate });
-        const response = await Api.post('/historial/filtrar', {
+        const response = await Api.post('/api/historial/filtrar', {
           usuarioId,
           fechaInicio: startDate,
           fechaFin: endDate,
@@ -76,7 +76,7 @@ const HistoryService = {
 
       // Si no hay filtros, obtener historial completo
       console.log(`📋 Fetching complete history for user ${usuarioId}`);
-      const response = await Api.get(`/historial/${usuarioId}`);
+      const response = await Api.get(`/api/historial/${usuarioId}`);
       console.log('✅ Complete history response:', response.data);
       return response.data;
     } catch (error) {

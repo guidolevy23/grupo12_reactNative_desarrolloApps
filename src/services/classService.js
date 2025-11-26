@@ -36,7 +36,7 @@ export const getClassDetails = async (classId) => {
 
 /** 🔹 Reservar */
 export const reserveClass = async (classId, usuarioId) =>
-  Api.post("/reservas", { usuario: { id: usuarioId }, course: { id: classId } });
+  Api.post("/api/reservas", { usuarioId, courseId: classId });
 
 
 // ================================================================
