@@ -11,8 +11,16 @@ export default function NoticiasScreen({ navigation }) {
     const load = async () => {
       try {
         const data = await getNews();
-        setNews(data);
-        setFiltered(data); // default
+
+        // 🔥 IMPORTANTE: convertir URLs de backend a Android Emulator
+        const processed = data.map((item) => ({
+          ...item,
+          imagenUrl: item.imagenUrl.replace("localhost", "10.0.2.2"), // ← SOLO ESTO
+        }));
+
+        setNews(processed);
+        setFiltered(processed);
+
       } catch (err) {
         console.log("Error cargando noticias:", err);
       }
@@ -20,7 +28,6 @@ export default function NoticiasScreen({ navigation }) {
     load();
   }, []);
 
-  // 🔎 aplicar filtros simples
   const applyFilter = (type) => {
     setFilter(type);
 
@@ -31,31 +38,30 @@ export default function NoticiasScreen({ navigation }) {
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => navigation.navigate("NoticiaDetalle", { noticia: item })}
-    >
-      <Image source={{ uri: item.imagenUrl }} style={styles.image} />
+  const renderItem = ({ item }) => {
+    console.log("🖼 URL FINAL:", item.imagenUrl);
 
-      <View style={styles.info}>
-        <Text style={styles.title}>{item.titulo}</Text>
-
-        <Text style={styles.desc} numberOfLines={2}>
-          {item.descripcion}
-        </Text>
-
-        <Text style={[styles.badge, styles[item.tipo]]}>{item.tipo.toUpperCase()}</Text>
-
-        <Text style={styles.date}>{item.fecha}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => navigation.navigate("NoticiaDetalle", { noticia: item })}
+      >
+        <Image source={{ uri: item.imagenUrl }} style={styles.image} />
+        <View style={styles.info}>
+          <Text style={styles.title}>{item.titulo}</Text>
+          <Text style={styles.desc} numberOfLines={2}>
+            {item.descripcion}
+          </Text>
+          <Text style={[styles.badge, styles[item.tipo]]}>{item.tipo.toUpperCase()}</Text>
+          <Text style={styles.date}>{item.fecha}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
 
-      {/* ===== FILTROS ===== */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filters}>
         <TouchableOpacity
           style={[styles.filterBtn, filter === "todos" && styles.filterActive]}
@@ -86,7 +92,6 @@ export default function NoticiasScreen({ navigation }) {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* ===== LISTA ===== */}
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -106,14 +111,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
 
-  /* ----- FILTROS ----- */
   filters: {
     flexDirection: "row",
     marginBottom: 16,
-    height: 45,        // 👈 clave
-    maxHeight: 45,     // 👈 clave
+    height: 45,
+    maxHeight: 45,
   },
-
 
   filterBtn: {
     paddingVertical: 8,
@@ -121,12 +124,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#EEE",
     borderRadius: 16,
     marginRight: 10,
-
-    // 💀 IMPORTANTE: evitar expansión rara
     alignItems: "center",
     justifyContent: "center",
-
-    // fuerza tamaño consistente
     minWidth: 80,
   },
 
@@ -140,8 +139,6 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 
-
-  /* ----- CARDS ----- */
   card: {
     backgroundColor: "#F4F4F4",
     marginBottom: 20,

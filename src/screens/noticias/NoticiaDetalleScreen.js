@@ -3,9 +3,12 @@ import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
 export default function NoticiaDetalleScreen({ route }) {
   const { noticia } = route.params;
 
+  // 🔥 Aseguramos que la URL funcione también si viene rota del backend
+  const imagenUrl = noticia.imagenUrl?.replace("localhost", "10.0.2.2");
+
   return (
     <ScrollView style={styles.container}>
-      <Image source={{ uri: noticia.imagenUrl }} style={styles.image} />
+      <Image source={{ uri: imagenUrl }} style={styles.image} />
 
       <Text style={styles.title}>{noticia.titulo}</Text>
       <Text style={styles.type}>{noticia.tipo.toUpperCase()}</Text>
