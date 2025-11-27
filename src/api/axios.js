@@ -3,6 +3,11 @@ import { Platform, Alert } from "react-native";
 import { getToken } from "../utils/tokenStorage";
 import { API_URL } from "@env";
 
+let logoutFn = null;
+
+export const setAxiosLogoutFunction = (fn) => {
+  logoutFn = fn;
+};
 
 // Configuración de URL base según el entorno
 // Para desarrollo: usa la IP de tu máquina local o localhost
@@ -56,12 +61,16 @@ Api.interceptors.request.use(
 Api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // const { logout } = useContext(AuthContext)
     if (error.response) {
       const status = error.response.status;
       const message =
         error.response.data?.message || 'Ocurrió un error inesperado.';
 
       switch (status) {
+        case 401:
+          if (logoutFn) logoutFn();
+          break;
         case 400:
           Alert.alert('Solicitud incorrecta', message);
           break;
