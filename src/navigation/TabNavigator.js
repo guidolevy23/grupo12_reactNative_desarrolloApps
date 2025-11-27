@@ -21,6 +21,7 @@ const Stack = createStackNavigator();
 const ProfileStack = createStackNavigator();
 const HistoryStack = createStackNavigator();
 const NoticiasStack = createStackNavigator();
+const ReservasStack = createStackNavigator();
 
 // 🧩 Stack Clases
 const HomeStack = () => {

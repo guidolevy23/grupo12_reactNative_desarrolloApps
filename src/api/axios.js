@@ -25,8 +25,7 @@ const getBaseURL = () => {
   if (__DEV__) {
     if (Platform.OS === 'android') {
       // Para emulador Android: 10.0.2.2 apunta a localhost de la máquina host
-      // Para dispositivo físico: usa tu IP local (ej: 192.168.0.165)
-      return 'http://192.168.0.165:8080/api';  // IP Local para dispositivo físico
+      return 'http://10.0.2.2:8080/api';  
     }
     // iOS simulator puede usar localhost
     return 'http://localhost:8080/api';
@@ -79,6 +78,8 @@ Api.interceptors.response.use(
           break;
       }
     } else if (error.request) {
+      console.error(error)
+      console.error(error.request)
       Alert.alert('Error de conexión', 'Revisa tu conexión a internet.');
     } else {
       Alert.alert('Error inesperado', error.message);

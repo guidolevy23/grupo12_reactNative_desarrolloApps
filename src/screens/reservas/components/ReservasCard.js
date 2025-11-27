@@ -1,6 +1,6 @@
 import React, {useCallback, useState} from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { openMapsByCoords } from "../../../utils/mapsLinking";
 
 export default function ReservasCard({ reserva, onCancelar }) {
