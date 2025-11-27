@@ -28,6 +28,8 @@ export default function HistoryScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedAsistenciaId, setSelectedAsistenciaId] = useState(null);
+  // Map asistenciaId -> courseId to maintain relationship after save
+  const [asistenciaToCourseMap, setAsistenciaToCourseMap] = useState({});
 
   const fetchHistory = async () => {
     try {
@@ -37,39 +39,65 @@ export default function HistoryScreen() {
         dateFilter.endDate
       );
       
+      console.log('📋 History data received:', data);
 
       // Fetch user's own calificaciones and merge them with history items
       let myCalificaciones = [];
       try {
         myCalificaciones = await CalificacionService.getMyRatings();
+        console.log('⭐ My calificaciones:', myCalificaciones);
       } catch (calErr) {
-        // ignore errors fetching user's calificaciones
+        console.log('⚠️ Error fetching calificaciones:', calErr.message);
       }
 
       const merged = data.map((item) => {
-        // Normalize possible turno id locations
-        const itemTurnoId = item.turnoId || item.turno?.id || null;
-        // Try to find a matching calificacion by various possibilities:
-        // - calificacion.turnoId === item.turnoId
-        // - calificacion.turnoId === item.id (some backends return turnoId while history item id is the asistencia id equal to turno)
-        // - calificacion.asistenciaId === item.id
-        const match = myCalificaciones.find((c) => {
-          const cTurno = c.turnoId || c.turnoId;
-          const cAsistencia = c.asistenciaId || c.asistenciaId;
+        console.log(`🔍 Checking item ${item.id}:`, {
+          itemId: item.id,
+          itemCourseName: item.courseName,
+          calificacionesCount: myCalificaciones.length
+        });
 
-          if (cTurno && itemTurnoId && Number(cTurno) === Number(itemTurnoId)) return true;
-          if (cTurno && item.id && Number(cTurno) === Number(item.id)) return true;
-          if (cAsistencia && item.id && Number(cAsistencia) === Number(item.id)) return true;
+        // Try to get courseId from our local map or from stored item data
+        const itemCourseId = item.courseId || asistenciaToCourseMap[item.id];
+
+        // Match calificacion with history item
+        const match = myCalificaciones.find((c) => {
+          const cCourseId = c.courseId || c.course_id;
+          
+          // Match by courseId if available
+          if (itemCourseId && cCourseId && Number(itemCourseId) === Number(cCourseId)) {
+            console.log(`  ✅ Match by courseId: ${itemCourseId} === ${cCourseId}`);
+            return true;
+          }
+          
           return false;
         });
 
         if (match) {
-          return { ...item, rating: match.estrellas || match.stars || match.rating, comment: match.comentario || match.comment };
+          console.log(`✅ Match found for item ${item.id}!`, match);
+          const courseId = match.course_id || match.courseId;
+          
+          // Update map for persistence
+          if (courseId && !asistenciaToCourseMap[item.id]) {
+            setAsistenciaToCourseMap(prev => ({
+              ...prev,
+              [item.id]: courseId
+            }));
+          }
+          
+          return { 
+            ...item, 
+            rating: match.estrellas || match.stars || match.rating, 
+            comment: match.comentario || match.comment,
+            courseId: courseId // Store for future matches
+          };
         }
 
+        console.log(`❌ No match for item ${item.id}`);
         return item;
       });
 
+      console.log('✨ Final merged history:', merged);
       setHistory(merged);
       setError(null);
     } catch (err) {
@@ -230,20 +258,34 @@ export default function HistoryScreen() {
   };
 
   const handleSavedRating = (resp) => {
-    // resp may contain { id, turnoId, estrellas, comentario } or similar
+    // resp contains: { id, course_id, estrellas, comentario }
     if (!resp) return;
 
-    setHistory((prev) => prev.map((h) => {
-      // Match by asistenciaId if available in resp, else by turnoId
-      const matchesByAsistencia = resp.asistenciaId && h.id && Number(resp.asistenciaId) === Number(h.id);
-      const hTurnoId = h.turnoId || h.turno?.id || h.turnoId;
-      const matchesByTurno = resp.turnoId && hTurnoId && Number(resp.turnoId) === Number(hTurnoId);
+    console.log('💾 Saved rating response:', resp);
 
-      if (matchesByAsistencia || matchesByTurno || (selectedAsistenciaId && h.id === selectedAsistenciaId)) {
-        return { ...h, rating: resp.estrellas || resp.stars || resp.rating, comment: resp.comentario || resp.comment };
+    // Save the mapping asistenciaId -> courseId
+    if (selectedAsistenciaId && resp.course_id) {
+      setAsistenciaToCourseMap(prev => ({
+        ...prev,
+        [selectedAsistenciaId]: resp.course_id
+      }));
+    }
+
+    setHistory((prev) => prev.map((h) => {
+      // Match by the selected asistenciaId
+      if (h.id === selectedAsistenciaId) {
+        console.log('✅ Updating history item:', h.id);
+        return {
+          ...h,
+          rating: resp.estrellas,
+          comment: resp.comentario,
+          courseId: resp.course_id // Store courseId for future matches
+        };
       }
       return h;
     }));
+    
+    setRatingModalVisible(false);
     setSelectedAsistenciaId(null);
   };
 
