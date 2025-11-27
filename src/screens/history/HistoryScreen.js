@@ -109,6 +109,12 @@ export default function HistoryScreen() {
 
   useEffect(() => {
     fetchHistory();
+  }, []);
+
+  useEffect(() => {
+    if (dateFilter.startDate || dateFilter.endDate) {
+      fetchHistory();
+    }
   }, [dateFilter]);
 
   const onRefresh = () => {
@@ -185,32 +191,37 @@ export default function HistoryScreen() {
               <Text style={styles.infoLabel}>👤 {professor}</Text>
             </View>
           )}
+        </View>
 
-          {/* Debug IDs to help differentiate items when backend returns similar course data */}
-          {(item.turnoId || item.courseId || item.id) && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, styles.debugText]}>
-                {item.turnoId ? `turnoId: ${item.turnoId}` : ''} {item.courseId ? `courseId: ${item.courseId}` : ''} {item.id ? `asistenciaId: ${item.id}` : ''}
-              </Text>
+        {/* Rating Section */}
+        <View style={styles.ratingSeparator}>
+          {item.rating ? (
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingHeader}>
+                <Text style={styles.ratingLabel}>Mi valoración:</Text>
+                <View style={styles.starsRow}>
+                  {[...Array(5)].map((_, index) => (
+                    <Text key={index} style={styles.starIcon}>
+                      {index < item.rating ? '⭐' : '☆'}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+              {item.comment && (
+              <View style={styles.commentContainer}>
+                <Text style={styles.commentText}>💬 {item.comment}</Text>
+              </View>
+            )}
             </View>
-          )}
-
-          {item.comment && (
-            <View style={styles.commentContainer}>
-              <Text style={styles.commentText}>💬 {item.comment}</Text>
-            </View>
-          )}
-
-          {/* Botón para calificar si no está calificado */}
-          {!item.rating && (
+          ) : (
             <TouchableOpacity
-              style={{ marginTop: 10, alignSelf: 'flex-end' }}
+              style={styles.rateButton}
               onPress={() => {
                 setSelectedAsistenciaId(item.id);
                 setRatingModalVisible(true);
               }}
             >
-              <Text style={{ color: '#667eea', fontWeight: '700' }}>Calificar</Text>
+              <Text style={styles.rateButtonText}>⭐ Calificar clase</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -460,10 +471,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  ratingSeparator: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#e0e0e0",
+  },
+  ratingSection: {
+    gap: 8,
+  },
+  ratingHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  ratingLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+  },
+  starsRow: {
+    flexDirection: "row",
+    gap: 2,
+  },
+  starIcon: {
+    fontSize: 16,
+  },
   commentContainer: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: "#f9f9f9",
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: "#f8f9ff",
     borderRadius: 8,
     borderLeftWidth: 3,
     borderLeftColor: "#667eea",
@@ -471,7 +508,25 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: 13,
     color: "#555",
-    fontStyle: "italic",
+    lineHeight: 18,
+  },
+  rateButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#667eea",
+    borderRadius: 8,
+    alignItems: "center",
+    width: "100%",
+    shadowColor: "#667eea",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  rateButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
   },
   emptyContainer: {
     padding: 40,

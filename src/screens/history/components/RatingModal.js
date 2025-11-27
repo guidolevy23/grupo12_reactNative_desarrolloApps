@@ -64,27 +64,61 @@ export default function RatingModal({ visible, onClose, asistenciaId, onSaved })
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent>
+    <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.backdrop}>
         <View style={styles.container}>
-          <Text style={styles.title}>Calificar clase</Text>
-          {renderStars()}
-          <TextInput
-            placeholder="Comentario (opcional)"
-            value={comment}
-            onChangeText={setComment}
-            style={styles.input}
-            multiline
-            numberOfLines={3}
-            maxLength={300}
-          />
+          {/* Header con icono */}
+          <View style={styles.header}>
+            <View style={styles.iconContainer}>
+              <Text style={styles.iconText}>⭐</Text>
+            </View>
+            <Text style={styles.title}>Calificar clase</Text>
+            <Text style={styles.subtitle}>Tu opinión nos ayuda a mejorar</Text>
+          </View>
 
+          {/* Stars Section */}
+          <View style={styles.starsSection}>
+            {renderStars()}
+            <Text style={styles.starsLabel}>
+              {stars === 5 ? '¡Excelente!' : stars === 4 ? 'Muy bueno' : stars === 3 ? 'Bueno' : stars === 2 ? 'Regular' : 'Mejorable'}
+            </Text>
+          </View>
+
+          {/* Comment Input */}
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>Comentario (opcional)</Text>
+            <TextInput
+              placeholder="Comparte tu experiencia..."
+              placeholderTextColor="#999"
+              value={comment}
+              onChangeText={setComment}
+              style={styles.input}
+              multiline
+              numberOfLines={4}
+              maxLength={300}
+            />
+            <Text style={styles.charCount}>{comment.length}/300</Text>
+          </View>
+
+          {/* Actions */}
           <View style={styles.actions}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={onClose} disabled={saving}>
+            <TouchableOpacity 
+              style={styles.cancelBtn} 
+              onPress={onClose} 
+              disabled={saving}
+              activeOpacity={0.7}
+            >
               <Text style={styles.cancelText}>Cancelar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.saveBtn} onPress={submit} disabled={saving}>
-              <Text style={styles.saveText}>{saving ? 'Guardando...' : 'Guardar'}</Text>
+            <TouchableOpacity 
+              style={[styles.saveBtn, saving && styles.saveBtnDisabled]} 
+              onPress={submit} 
+              disabled={saving}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.saveText}>
+                {saving ? '⏳ Guardando...' : '✓ Guardar'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -94,17 +128,145 @@ export default function RatingModal({ visible, onClose, asistenciaId, onSaved })
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-  container: { width: '90%', backgroundColor: 'white', borderRadius: 12, padding: 18 },
-  title: { fontSize: 18, fontWeight: '700', marginBottom: 12 },
-  starsRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 12 },
-  star: { fontSize: 28, marginHorizontal: 6 },
-  starActive: { color: '#f5a623' },
-  starInactive: { color: '#ddd' },
-  input: { borderWidth: 1, borderColor: '#eee', padding: 10, borderRadius: 8, minHeight: 60, textAlignVertical: 'top' },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 },
-  cancelBtn: { paddingVertical: 10, paddingHorizontal: 14, marginRight: 8 },
-  cancelText: { color: '#666' },
-  saveBtn: { backgroundColor: '#667eea', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8 },
-  saveText: { color: 'white', fontWeight: '700' },
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  container: {
+    width: '90%',
+    maxWidth: 400,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  iconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#fff3e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconText: {
+    fontSize: 32,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  starsSection: {
+    alignItems: 'center',
+    marginBottom: 24,
+    paddingVertical: 16,
+    backgroundColor: '#f8f9ff',
+    borderRadius: 12,
+  },
+  starsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  star: {
+    fontSize: 36,
+    marginHorizontal: 4,
+  },
+  starActive: {
+    color: '#f5a623',
+  },
+  starInactive: {
+    color: '#e0e0e0',
+  },
+  starsLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#667eea',
+    marginTop: 4,
+  },
+  inputContainer: {
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    backgroundColor: '#fafafa',
+    padding: 12,
+    borderRadius: 12,
+    minHeight: 100,
+    textAlignVertical: 'top',
+    fontSize: 15,
+    color: '#333',
+  },
+  charCount: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+    backgroundColor: 'white',
+    alignItems: 'center',
+  },
+  cancelText: {
+    color: '#666',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  saveBtn: {
+    flex: 1,
+    backgroundColor: '#667eea',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#667eea',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  saveBtnDisabled: {
+    backgroundColor: '#b0b8e8',
+    opacity: 0.7,
+  },
+  saveText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 16,
+  },
 });
