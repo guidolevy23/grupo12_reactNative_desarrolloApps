@@ -1,39 +1,9 @@
-// import { createContext, useEffect, useState, useMemo } from 'react';
-// import { saveToken, getToken, removeToken } from '../utils/tokenStorage';
-
-// export const AuthContext = createContext();
-
-// export const AuthProvider = ({ children }) => {
-//   const [token, setToken] = useState(null);
-
-//   useEffect(() => {
-//     (async () => {
-//       const t = await getToken();
-//       setToken(t);
-//     })();
-//   }, []);
-
-//   const login = async (jwt) => {
-//     setToken(jwt);
-//     await saveToken(jwt);
-//   };
-
-//   const logout = async (jwt) => {
-//     setToken(null);
-//     await removeToken(jwt);
-//   };
-
-//   const value = useMemo(() => ({ token, login, logout }), [token]);
-
-//   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-// };
-
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Alert, Linking, Platform } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import AuthService from '../services/authService';
 import { getToken, removeToken, saveToken } from '../utils/tokenStorage';
+import { setAxiosLogoutFunction } from '../api/axios';
 
 // 1. Create the Context object
 export const AuthContext = createContext(null);
@@ -50,12 +20,14 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         // Si hay token, solicitar autenticación biométrica
         await authenticateWithBiometrics();
-      } else {
-        setIsLoading(false);
+        setIsAuthenticated(true)
       }
+      setIsLoading(false);
     };
     loadSession();
   }, []);
+
+
 
   // --- Biometric Authentication ---
   const authenticateWithBiometrics = async () => {
@@ -96,8 +68,7 @@ export const AuthProvider = ({ children }) => {
 
         if (securityLevel === LocalAuthentication.SecurityLevel.NONE) {
           // No tiene ningún método de seguridad configurado
-          return new Promise((resolve) => {
-            Alert.alert(
+             Alert.alert(
               "Seguridad Requerida",
               "Para usar RitmoFit, necesitas configurar un método de seguridad en tu dispositivo (huella digital, Face ID, PIN o patrón).\n\n¿Deseas ir a Ajustes ahora?",
               [
@@ -151,11 +122,9 @@ export const AuthProvider = ({ children }) => {
                 },
               ]
             );
-          });
         } else {
           // Tiene seguridad configurada pero canceló o falló
-          return new Promise((resolve) => {
-            Alert.alert(
+          Alert.alert(
               "Autenticación requerida",
               "Necesitas autenticarte para continuar.",
               [
@@ -177,7 +146,6 @@ export const AuthProvider = ({ children }) => {
                 },
               ]
             );
-          });
         }
       }
     } catch (error) {
@@ -215,6 +183,10 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     setIsBiometricVerified(false);
   };
+
+  useEffect(() => {
+    setAxiosLogoutFunction(logout)
+  }, [])
 
   // 4. The value provided to all children components
   const contextValue = {

@@ -30,7 +30,7 @@ export const getClassList = async () => {
 
 /** 🔹 Detalle */
 export const getClassDetails = async (classId) => {
-  const res = await Api.get(`/courses/${classId}`);
+  const res = await Api.get(`/courses/${classId}?projection=courseWithBranch`);
   return res.data;
 };
 

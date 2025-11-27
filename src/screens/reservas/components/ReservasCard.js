@@ -1,6 +1,7 @@
-import React from "react";
+import React, {useCallback, useState} from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { openMapsByCoords } from "../../../utils/mapsLinking";
 
 export default function ReservasCard({ reserva, onCancelar }) {
   const { id, course, estado } = reserva;
@@ -10,12 +11,45 @@ export default function ReservasCard({ reserva, onCancelar }) {
   const handleCheckIn = () => {
     navigation.navigate("QRScanner", { reservaId: id });
   };
+  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  const [fecha, setFecha] = useState("")
+  const [hora, setHora] = useState("")
+  const ordenarFecha = () =>{
+    const fechaCompleta = course.startsAt.split("T");
+    const horario = fechaCompleta[1].slice(0, 5); // HH:MM
+    const fechaSola = fechaCompleta[0].split("-");
+
+    const fechaOrdenada = [
+      fechaSola[2],
+      meses[Number(fechaSola[1]) - 1],
+      fechaSola[0],
+    ];
+    setHora(horario)
+    setFecha(fechaOrdenada.join(" "))
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      (async () => {
+        if (!alive) return;
+         ordenarFecha();
+      })();
+      return () => {
+        alive = false;
+      };
+    }, [])
+  );
 
   return (
     <View style={styles.card}>
       <Text style={styles.title}>🏋️ {course.name}</Text>
-      <Text style={styles.text}>📍 {branch?.nombre || "Sede no disponible"}</Text>
-      <Text style={styles.text}>🕓 {course.startsAt}</Text>
+      <TouchableOpacity style={styles.flex} onPress={() => openMapsByCoords(branch?.lat, branch?.lng)}>
+        <Text style={styles.text} >📍</Text> 
+        <Text style={[styles.text, { textDecorationLine: "underline", color: "#3366ff" }]}>{branch.nombre}</Text>
+      </TouchableOpacity>
+      <Text style={styles.text}>🕓 {hora}</Text>
+      <Text style={styles.text}>📅 {fecha}</Text>
 
       <Text
         style={[
@@ -111,4 +145,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "600",
   },
+  flex:{
+    display: "flex",
+    flexDirection: "row"
+  }
 });

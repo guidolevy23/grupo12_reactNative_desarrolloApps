@@ -16,6 +16,7 @@ import { useProfile } from "../../services/profileService";
 import { getReservasUsuario } from "../../services/reservaService";
 import { useFocusEffect } from "@react-navigation/native";
 import { processNotifications } from "../../services/notificationBackgroudTask";
+import { openMapsByCoords } from "../../utils/mapsLinking";
 
 export default function ProfileScreen() {
   const [user, setUser] = useState(null);
@@ -45,19 +46,26 @@ export default function ProfileScreen() {
     let mejorDiff = Infinity;
 
     reservas?.forEach((clase) => {
-      const fechaClase = new Date(clase.horario);
+      const fechaClase = new Date(clase.course.startsAt);
       const diff = fechaClase.getTime() - ahora.getTime();
       if (diff >= 0 && diff < mejorDiff && clase.estado === "CONFIRMADA") {
         mejorDiff = diff;
         mejor = clase;
-        console.log(mejor)
       }
     });
-    const fechaCompleta = mejor.horario.split("T");
-    const horario = fechaCompleta[1];
-    const fechaSola = fechaCompleta[0].split("-")
-    const fechaOrdenada = [horario, fechaSola[2],meses[Number(fechaSola[1]) - 1], fechaSola[0]];
-    mejor.horario = fechaOrdenada.join(' '); 
+
+    if (!mejor) return null; // 👈 importantísimo
+
+    const fechaCompleta = mejor.course.startsAt.split("T");
+    const horario = fechaCompleta[1].slice(0, 5); // HH:MM
+    const fechaSola = fechaCompleta[0].split("-");
+    const fechaOrdenada = [
+      horario,
+      fechaSola[2],
+      meses[Number(fechaSola[1]) - 1],
+      fechaSola[0],
+    ];
+    mejor.horario = fechaOrdenada.join(" ");
     return mejor;
   };
 
@@ -65,7 +73,6 @@ export default function ProfileScreen() {
     try {
       const usuario = await getUserDetail();
       if (!usuario) return;
-
       setUser(usuario);
 
       const reservas = await getReservasUsuario(usuario.id);
@@ -202,9 +209,12 @@ export default function ProfileScreen() {
             {proximaClase ? (
               <>
                 <Text style={styles.statNumber}>
-                  {proximaClase.courseName}
+                  {proximaClase.course.name}
                 </Text>
-                <Text style={styles.statNumber}>{proximaClase.branch}</Text>
+                {/* ACA ME QUEDE, deberia ver como viene la sede en el proximaClase para mostrarlo */}
+                <TouchableOpacity onPress={() => openMapsByCoords(proximaClase.course.branch?.lat, proximaClase.course.branch?.lng)}>
+                  <Text style={[styles.statNumber, { textDecorationLine: "underline", color: "#3366ff" }]}>{proximaClase.course.branch.nombre}</Text>
+                </TouchableOpacity>
                 <Text style={styles.statNumber}>
                   {proximaClase.horario}
                 </Text>

@@ -1,3 +1,6 @@
+// ===============================================
+//   TabNavigator.js
+// ===============================================
 import React from "react";
 import { Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -10,14 +13,16 @@ import HistoryScreen from "../screens/history/HistoryScreen";
 import ReservasScreen from "../screens/reservas/ReservasScreen";
 import QRScannerScreen from "../screens/reservas/QRScannerScreen";
 import QRGeneratorScreen from "../screens/reservas/QRGeneratorScreen";
+import NoticiasScreen from "../screens/noticias/NoticiasScreen";
+import NoticiaDetalleScreen from "../screens/noticias/NoticiaDetalleScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const ProfileStack = createStackNavigator();
 const HistoryStack = createStackNavigator();
-const ReservasStack = createStackNavigator();
+const NoticiasStack = createStackNavigator();
 
-// 🧩 Stack de Clases
+// 🧩 Stack Clases
 const HomeStack = () => {
   return (
     <Stack.Navigator>
@@ -44,6 +49,7 @@ const HomeStack = () => {
     </Stack.Navigator>
   );
 };
+
 function ProfileStackNavigator() {
   return (
     <ProfileStack.Navigator>
@@ -51,10 +57,10 @@ function ProfileStackNavigator() {
         name="Profile"
         component={ProfileScreen}
         options={{
-          title: 'Perfil de usuario',
-          headerStyle: { backgroundColor: '#667eea' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
+          title: "Perfil de usuario",
+          headerStyle: { backgroundColor: "#667eea" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
         }}
       />
     </ProfileStack.Navigator>
@@ -68,10 +74,10 @@ function HistoryStackNavigator() {
         name="History"
         component={HistoryScreen}
         options={{
-          title: 'Historial',
-          headerStyle: { backgroundColor: '#667eea' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
+          title: "Historial",
+          headerStyle: { backgroundColor: "#667eea" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
         }}
       />
     </HistoryStack.Navigator>
@@ -112,6 +118,36 @@ function ReservasStackNavigator() {
         }}
       />
     </ReservasStack.Navigator>
+  )
+};
+
+
+// 📰 Stack Noticias (con detalle)
+function NoticiasStackNavigator() {
+  return (
+    <NoticiasStack.Navigator>
+      <NoticiasStack.Screen
+        name="Noticias"
+        component={NoticiasScreen}
+        options={{
+          title: "Noticias",
+          headerStyle: { backgroundColor: "#667eea" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+
+      <NoticiasStack.Screen
+        name="NoticiaDetalle"
+        component={NoticiaDetalleScreen}
+        options={{
+          title: "Detalle",
+          headerStyle: { backgroundColor: "#667eea" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      />
+    </NoticiasStack.Navigator>
   );
 }
 
@@ -124,7 +160,6 @@ const TabNavigator = () => {
         headerShown: false,
       }}
     >
-      {/* 🏋️ CLASES */}
       <Tab.Screen
         name="Home"
         component={HomeStack}
@@ -136,7 +171,6 @@ const TabNavigator = () => {
         }}
       />
 
-      {/* 📅 RESERVAS */}
       <Tab.Screen
         name="Reservas"
         component={ReservasStackNavigator}
@@ -148,21 +182,36 @@ const TabNavigator = () => {
         }}
       />
 
-      {/* 👤 PERFIL */}
+      <Tab.Screen
+        name="NoticiasTab"
+        component={NoticiasStackNavigator}
+        options={{
+          tabBarLabel: "Noticias",
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24, color }}>📰</Text>
+          ),
+        }}
+      />
+
       <Tab.Screen
         name="HistoryTab"
         component={HistoryStackNavigator}
         options={{
-          tabBarLabel: 'Historial',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>📊</Text>,
+          tabBarLabel: "Historial",
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24, color }}>📊</Text>
+          ),
         }}
       />
+
       <Tab.Screen
         name="ProfileTab"
         component={ProfileStackNavigator}
         options={{
-          tabBarLabel: 'Perfil',
-          tabBarIcon: ({ color }) => <Text style={{ fontSize: 24, color }}>👤</Text>,
+          tabBarLabel: "Perfil",
+          tabBarIcon: ({ color }) => (
+            <Text style={{ fontSize: 24, color }}>👤</Text>
+          ),
         }}
       />
     </Tab.Navigator>

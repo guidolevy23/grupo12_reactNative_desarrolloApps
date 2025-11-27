@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getAttendanceHistory } from "../../services/historyService";
+import CalificacionService from '../../services/calificacionService';
+import RatingModal from './components/RatingModal';
 
 export default function HistoryScreen() {
   const [history, setHistory] = useState([]);
@@ -24,21 +26,53 @@ export default function HistoryScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [ratingModalVisible, setRatingModalVisible] = useState(false);
+  const [selectedAsistenciaId, setSelectedAsistenciaId] = useState(null);
 
   const fetchHistory = async () => {
     try {
       setLoading(true);
-      console.log('📊 Fetching attendance history...');
       const data = await getAttendanceHistory(
         dateFilter.startDate,
         dateFilter.endDate
       );
-      console.log('✅ History data received:', data);
-      setHistory(data);
+      
+
+      // Fetch user's own calificaciones and merge them with history items
+      let myCalificaciones = [];
+      try {
+        myCalificaciones = await CalificacionService.getMyRatings();
+      } catch (calErr) {
+        // ignore errors fetching user's calificaciones
+      }
+
+      const merged = data.map((item) => {
+        // Normalize possible turno id locations
+        const itemTurnoId = item.turnoId || item.turno?.id || null;
+        // Try to find a matching calificacion by various possibilities:
+        // - calificacion.turnoId === item.turnoId
+        // - calificacion.turnoId === item.id (some backends return turnoId while history item id is the asistencia id equal to turno)
+        // - calificacion.asistenciaId === item.id
+        const match = myCalificaciones.find((c) => {
+          const cTurno = c.turnoId || c.turnoId;
+          const cAsistencia = c.asistenciaId || c.asistenciaId;
+
+          if (cTurno && itemTurnoId && Number(cTurno) === Number(itemTurnoId)) return true;
+          if (cTurno && item.id && Number(cTurno) === Number(item.id)) return true;
+          if (cAsistencia && item.id && Number(cAsistencia) === Number(item.id)) return true;
+          return false;
+        });
+
+        if (match) {
+          return { ...item, rating: match.estrellas || match.stars || match.rating, comment: match.comentario || match.comment };
+        }
+
+        return item;
+      });
+
+      setHistory(merged);
       setError(null);
     } catch (err) {
-      console.error('❌ Error fetching history:', err);
-      console.error('Error details:', err.message);
       setError(`Error al cargar el historial: ${err.message}`);
       // Datos de ejemplo en caso de error (formato del backend)
       setHistory([
@@ -152,14 +186,54 @@ export default function HistoryScreen() {
             </View>
           )}
 
+          {/* Debug IDs to help differentiate items when backend returns similar course data */}
+          {(item.turnoId || item.courseId || item.id) && (
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, styles.debugText]}>
+                {item.turnoId ? `turnoId: ${item.turnoId}` : ''} {item.courseId ? `courseId: ${item.courseId}` : ''} {item.id ? `asistenciaId: ${item.id}` : ''}
+              </Text>
+            </View>
+          )}
+
           {item.comment && (
             <View style={styles.commentContainer}>
               <Text style={styles.commentText}>💬 {item.comment}</Text>
             </View>
           )}
+
+          {/* Botón para calificar si no está calificado */}
+          {!item.rating && (
+            <TouchableOpacity
+              style={{ marginTop: 10, alignSelf: 'flex-end' }}
+              onPress={() => {
+                setSelectedAsistenciaId(item.id);
+                setRatingModalVisible(true);
+              }}
+            >
+              <Text style={{ color: '#667eea', fontWeight: '700' }}>Calificar</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
+  };
+
+  const handleSavedRating = (resp) => {
+    // resp may contain { id, turnoId, estrellas, comentario } or similar
+    if (!resp) return;
+
+    setHistory((prev) => prev.map((h) => {
+      // Match by asistenciaId if available in resp, else by turnoId
+      const matchesByAsistencia = resp.asistenciaId && h.id && Number(resp.asistenciaId) === Number(h.id);
+      const hTurnoId = h.turnoId || h.turno?.id || h.turnoId;
+      const matchesByTurno = resp.turnoId && hTurnoId && Number(resp.turnoId) === Number(hTurnoId);
+
+      if (matchesByAsistencia || matchesByTurno || (selectedAsistenciaId && h.id === selectedAsistenciaId)) {
+        return { ...h, rating: resp.estrellas || resp.stars || resp.rating, comment: resp.comentario || resp.comment };
+      }
+      return h;
+    }));
+    setSelectedAsistenciaId(null);
   };
 
   if (loading && !refreshing) {
@@ -277,6 +351,13 @@ export default function HistoryScreen() {
             </Text>
           </View>
         }
+      />
+
+      <RatingModal
+        visible={ratingModalVisible}
+        onClose={() => setRatingModalVisible(false)}
+        asistenciaId={selectedAsistenciaId}
+        onSaved={handleSavedRating}
       />
     </View>
   );

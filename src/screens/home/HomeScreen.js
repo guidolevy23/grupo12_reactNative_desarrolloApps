@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   StyleSheet,
   RefreshControl,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 import Filtros from "./components/Filter";
 
@@ -33,6 +33,18 @@ export default function HomeScreen() {
   const [availableDates, setAvailableDates] = useState([]);
 
   const [showFilters, setShowFilters] = useState(false);
+  const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+  const ordenarFecha = (inicio) =>{
+    const fechaCompleta = inicio.split("T");
+    const fechaSola = fechaCompleta[0].split("-");
+    const fechaOrdenada = [
+      fechaSola[2],
+      meses[Number(fechaSola[1]) - 1],
+      fechaSola[0],
+    ];
+    return fechaOrdenada.join(" ");
+  }
 
   // ==================================================================
   // 🔥 EXTRACTORES (igual que Android → se derivan de los cursos)
@@ -120,6 +132,7 @@ export default function HomeScreen() {
       (item.capacity || 20) - (item.currentEnrollment || 0);
 
     const isAlmostFull = availableSpots <= 5;
+    const fechaLegible = ordenarFecha(item.startsAt);
 
     return (
       <TouchableOpacity
@@ -142,13 +155,9 @@ export default function HomeScreen() {
 
         <View style={styles.cardBody}>
           <Text style={styles.infoLabel}>🏢 {item.branch.nombre}</Text>
-          {item.startsAt && (
+          {fechaLegible && (
             <Text style={styles.infoLabel}>
-              📅 {new Date(item.startsAt).toLocaleDateString('es-AR', { 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric' 
-              })}
+              📅 {fechaLegible}
             </Text>
           )}
           {item.startsAt && (
