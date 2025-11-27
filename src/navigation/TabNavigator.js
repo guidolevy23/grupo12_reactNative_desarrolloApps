@@ -11,6 +11,8 @@ import ClassDetailScreen from "../screens/home/ClassDetailScreen";
 import ProfileScreen from "../screens/profile/ProfileScreen";
 import HistoryScreen from "../screens/history/HistoryScreen";
 import ReservasScreen from "../screens/reservas/ReservasScreen";
+import QRScannerScreen from "../screens/reservas/QRScannerScreen";
+import QRGeneratorScreen from "../screens/reservas/QRGeneratorScreen";
 import NoticiasScreen from "../screens/noticias/NoticiasScreen";
 import NoticiaDetalleScreen from "../screens/noticias/NoticiaDetalleScreen";
 
@@ -82,6 +84,44 @@ function HistoryStackNavigator() {
   );
 }
 
+function ReservasStackNavigator() {
+  return (
+    <ReservasStack.Navigator>
+      <ReservasStack.Screen
+        name="ReservasList"
+        component={ReservasScreen}
+        options={{
+          title: 'Mis Reservas',
+          headerStyle: { backgroundColor: '#667eea' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+      <ReservasStack.Screen
+        name="QRScanner"
+        component={QRScannerScreen}
+        options={{
+          title: 'Escanear QR',
+          headerStyle: { backgroundColor: '#667eea' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+      <ReservasStack.Screen
+        name="QRGenerator"
+        component={QRGeneratorScreen}
+        options={{
+          title: '🧪 Generador de QR (Testing)',
+          headerStyle: { backgroundColor: '#667eea' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+    </ReservasStack.Navigator>
+  )
+};
+
+
 // 📰 Stack Noticias (con detalle)
 function NoticiasStackNavigator() {
   return (
@@ -133,7 +173,7 @@ const TabNavigator = () => {
 
       <Tab.Screen
         name="Reservas"
-        component={ReservasScreen}
+        component={ReservasStackNavigator}
         options={{
           tabBarLabel: "Reservas",
           tabBarIcon: ({ color }) => (

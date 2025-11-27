@@ -9,8 +9,9 @@ import {
   Platform,
   SafeAreaView,
   StatusBar,
+  TouchableOpacity,
 } from "react-native";
-import { useFocusEffect, useRoute } from "@react-navigation/native";
+import { useFocusEffect, useRoute, useNavigation } from "@react-navigation/native";
 import { useProfile } from "../../services/profileService";
 import {
   getReservasUsuario,
@@ -23,6 +24,7 @@ export default function ReservasScreen() {
   const [loading, setLoading] = useState(true);
   const { getUserDetail } = useProfile();
   const route = useRoute();
+  const navigation = useNavigation();
 
   const cargarReservas = useCallback(async () => {
     try {
@@ -85,7 +87,19 @@ const handleCancelar = async (id) => {
           </View>
         ) : (
           <>
-            <Text style={styles.title}>Mis reservas</Text>
+            <View style={styles.headerContainer}>
+              <Text style={styles.title}>Mis reservas</Text>
+              
+              {/* Testing Button - Remove in production */}
+              {__DEV__ && (
+                <TouchableOpacity
+                  style={styles.testButton}
+                  onPress={() => navigation.navigate("QRGenerator")}
+                >
+                  <Text style={styles.testButtonText}>🧪 Test QR</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             <FlatList
               data={reservas}
@@ -110,7 +124,24 @@ const styles = StyleSheet.create({
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   container: { flex: 1, padding: 20 },
-  title: { fontSize: 22, fontWeight: "700", marginBottom: 16 },
+  headerContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  title: { fontSize: 22, fontWeight: "700" },
+  testButton: {
+    backgroundColor: "#ffc107",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  testButtonText: {
+    color: "#000",
+    fontSize: 12,
+    fontWeight: "600",
+  },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   textMuted: { color: "#666", marginTop: 10 },
   textEmpty: { color: "#999", fontSize: 16 },

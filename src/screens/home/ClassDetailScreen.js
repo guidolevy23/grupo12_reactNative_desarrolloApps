@@ -44,9 +44,6 @@ export default function ClassDetailScreen({ route }) {
           capacity: cupos.capacity,
           currentEnrollment: cupos.currentEnrollment,
         });
-
-
-        setClassData(details);
       } catch (err) {
         console.error("❌ Error al cargar detalles:", err);
         setError("No se pudieron cargar los detalles de la clase");
