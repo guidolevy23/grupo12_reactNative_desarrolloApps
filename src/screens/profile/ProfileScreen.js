@@ -78,7 +78,7 @@ export default function ProfileScreen() {
     reservas?.forEach((clase) => {
       const fechaClase = new Date(clase.course.startsAt);
       const diff = fechaClase.getTime() - ahora.getTime();
-      if (diff >= 0 && diff < mejorDiff && clase.estado === "CONFIRMADA") {
+      if (diff <= 0 && diff < mejorDiff && clase.estado === "CONFIRMADA") {
         mejorDiff = diff;
         mejor = clase;
       }
