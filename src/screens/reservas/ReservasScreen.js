@@ -25,12 +25,13 @@ export default function ReservasScreen() {
   const { getUserDetail } = useProfile();
   const route = useRoute();
   const navigation = useNavigation();
+  const [usuario,setUsuario] = useState("")
 
   const cargarReservas = useCallback(async () => {
     try {
       const usuario = await getUserDetail();
       const id = usuario.id || usuario.idUsuario;
-
+      setUsuario(usuario)
       const data = await getReservasUsuario(id);
       setReservas(data);
     } catch (error) {
@@ -105,7 +106,7 @@ const handleCancelar = async (id) => {
               data={reservas}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
-                <ReservaCard reserva={item} onCancelar={handleCancelar} />
+                <ReservaCard reserva={item} user={usuario} onCancelar={handleCancelar} />
               )}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 20 }}

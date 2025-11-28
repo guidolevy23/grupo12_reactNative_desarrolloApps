@@ -18,6 +18,42 @@ import { useFocusEffect } from "@react-navigation/native";
 import { processNotifications } from "../../services/notificationBackgroudTask";
 import { openMapsByCoords } from "../../utils/mapsLinking";
 
+const validarDireccionBasica = (direccion) => {
+  if (!direccion) return false;
+
+  // Ejemplos válidos:
+  // "Juncal 1919"
+  // "Av. Santa Fe 3450"
+  // "Carlos Pellegrini 1023 1°B"
+  const regex = /^([A-Za-zÁÉÍÓÚÜÑáéíóúüñ.'º°\- ]+)\s+(\d+.*)$/;
+
+  return regex.test(direccion.trim());
+};
+
+const validarDireccionBuenosAires = (direccion) => {
+  if (!direccion) return false;
+
+  // 1) Primero: validar calle + altura
+  if (!validarDireccionBasica(direccion)) {
+    return false;
+  }
+
+  // 2) Después: chequear que el texto incluya algo que indique Buenos Aires
+  const normalizada = direccion
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // saca tildes
+
+  const esBuenosAires =
+    normalizada.includes("buenos aires") ||
+    normalizada.includes("caba") ||
+    normalizada.includes("capital federal") ||
+    normalizada.includes("bs as") ||
+    normalizada.includes("bs. as.");
+
+  return esBuenosAires;
+};
+
 export default function ProfileScreen() {
   const [user, setUser] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -41,7 +77,6 @@ export default function ProfileScreen() {
   "https://robohash.org/user10.png",
 ];
   const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-
   const calcularProximaClase = (reservas) => {
     const ahora = new Date();
     let mejor = null;
@@ -106,15 +141,24 @@ export default function ProfileScreen() {
   };
 
   const save = async () => {
-    try {
-      setUser(draft);
-      await postChangesUser(draft);
-      setEditing(false);
-      Alert.alert("Perfil", "Cambios guardados");
-    } catch (e) {
-      Alert.alert("Error", "No se pudo guardar");
-    }
-  };
+  try {
+    // ✅ Validación básica de dirección: calle + altura
+    if (draft?.direccion && !validarDireccionBuenosAires(draft.direccion)) {
+  Alert.alert(
+    "Dirección inválida",
+    "Ingresá una dirección con calle, altura y la ciudad en Buenos Aires. Ej: 'Juncal 1919, CABA'"
+  );
+  return;
+}
+
+    setUser(draft);
+    await postChangesUser(draft);
+    setEditing(false);
+    Alert.alert("Perfil", "Cambios guardados");
+  } catch (e) {
+    Alert.alert("Error", "No se pudo guardar");
+  }
+};
 
   const currentUser = editing ? draft : user;
   const avatarUri = currentUser?.photoUrl || AVATARS[0];
@@ -177,11 +221,14 @@ export default function ProfileScreen() {
                 onChangeText={(t) => setDraft({ ...draft, telefono: t })}
               />
               <TextInput
-                style={styles.input}
-                placeholder="Direccion"
-                value={draft?.direccion || ""}
-                onChangeText={(d) => setDraft({ ...draft, direccion: d })}
-              />
+  style={styles.input}
+  placeholder='Dirección (Ej: Juncal 1919, CABA)'
+  value={draft?.direccion || ""}
+  onChangeText={(d) => setDraft({ ...draft, direccion: d })}
+/>
+<Text style={styles.helperText}>
+  Incluí la ciudad. Ej: "Juncal 1919, CABA".
+</Text>
             </>
           ) : (
             <>
@@ -214,7 +261,7 @@ export default function ProfileScreen() {
                   {proximaClase.course.name}
                 </Text>
                 {/* ACA ME QUEDE, deberia ver como viene la sede en el proximaClase para mostrarlo */}
-                <TouchableOpacity onPress={() => openMapsByCoords(proximaClase.course.branch?.lat, proximaClase.course.branch?.lng,user.direccion)}>
+                <TouchableOpacity onPress={() => openMapsByCoords(proximaClase.course.branch?.lat, proximaClase.course.branch?.lng,user?.direccion)}>
                   <Text style={[styles.statNumber, { textDecorationLine: "underline", color: "#3366ff" }]}>{proximaClase.course.branch.nombre}</Text>
                 </TouchableOpacity>
                 <Text style={styles.statNumber}>
@@ -261,12 +308,6 @@ export default function ProfileScreen() {
               >
                 <Text style={styles.btnTextDanger}>Cerrar sesión</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.btn, styles.danger]}
-                onPress={processNotifications}
-              >
-                <Text style={styles.btnTextDanger}>Noti</Text>
-              </TouchableOpacity>
             </>
           )}
         </View>
@@ -293,7 +334,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: 12,
-    marginBottom: 20,
+    marginBottom: 15,
     padding: 20,
     backgroundColor: "white",
     borderRadius: 16,
@@ -327,13 +368,13 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   statsRow: {
-    flexDirection: "row",
+    width:"100%",
     gap: 12,
     justifyContent: "space-between",
-    marginTop: 16,
+    // marginTop: 16,
   },
   statCard: {
-    flex: 1,
+    // flex: 1,
     padding: 16,
     backgroundColor: "white",
     borderRadius: 14,
@@ -357,9 +398,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   actions: {
-    marginTop: 24, // antes "auto", ahora deja que el ScrollView maneje el espacio
+    marginTop: 15, // antes "auto", ahora deja que el ScrollView maneje el espacio
     gap: 10,
-    paddingTop: 20,
   },
   btn: {
     paddingVertical: 14,
@@ -421,4 +461,10 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 999,
   },
+  helperText: {
+  width: "100%",
+  fontSize: 12,
+  color: "#777",
+  marginTop: 4,
+},
 });

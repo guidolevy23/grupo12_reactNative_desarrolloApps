@@ -16,11 +16,9 @@ export const openMapsByCoords = async (lat, lng, originAddress) => {
   const destinationParam = encodeURIComponent(`${lat},${lng}`);
 
   // origen: si viene dirección en texto, la encodeamos
-  const originParam = originAddress
-    ? `&origin=${encodeURIComponent(originAddress)}`
-    : "";
-
-  const url = `https://www.google.com/maps/dir/?api=1${originParam}&destination=${destinationParam}&travelmode=driving`;
+  const url = originAddress
+    ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(originAddress)}&destination=${destinationParam}&travelmode=driving`
+    : `https://www.google.com/maps/search/?api=1&query=${destinationParam}`;
 
   console.log("URL que voy a abrir:", url);
 

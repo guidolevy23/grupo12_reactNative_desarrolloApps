@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { openMapsByCoords } from "../../../utils/mapsLinking";
 
-export default function ReservasCard({ reserva, onCancelar }) {
+export default function ReservasCard({ reserva, user, onCancelar }) {
   const { id, course, estado } = reserva;
   const { branch } = course;
   const navigation = useNavigation();
@@ -44,7 +44,7 @@ export default function ReservasCard({ reserva, onCancelar }) {
   return (
     <View style={styles.card}>
       <Text style={styles.title}>🏋️ {course.name}</Text>
-      <TouchableOpacity style={styles.flex} onPress={() => openMapsByCoords(branch?.lat, branch?.lng)}>
+      <TouchableOpacity style={styles.flex} onPress={() => openMapsByCoords(branch?.lat, branch?.lng, user.direccion ? user.direccion : null)}>
         <Text style={styles.text} >📍</Text> 
         <Text style={[styles.text, { textDecorationLine: "underline", color: "#3366ff" }]}>{branch.nombre}</Text>
       </TouchableOpacity>
