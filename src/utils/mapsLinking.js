@@ -1,7 +1,6 @@
 import { Platform, Linking, Alert } from "react-native";
 
 export const openMapsByCoords = async (lat, lng, originAddress) => {
-  console.log(lat,lng,originAddress)
   const scheme = Platform.select({
     ios: "maps:0,0?q=",
     android: "geo:0,0?q=",
@@ -19,8 +18,6 @@ export const openMapsByCoords = async (lat, lng, originAddress) => {
   const url = originAddress
     ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(originAddress)}&destination=${destinationParam}&travelmode=driving`
     : `https://www.google.com/maps/search/?api=1&query=${destinationParam}`;
-
-  console.log("URL que voy a abrir:", url);
 
   try {
     // no uso canOpenURL, voy directo al navegador

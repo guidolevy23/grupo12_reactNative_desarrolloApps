@@ -21,10 +21,6 @@ import { openMapsByCoords } from "../../utils/mapsLinking";
 const validarDireccionBasica = (direccion) => {
   if (!direccion) return false;
 
-  // Ejemplos válidos:
-  // "Juncal 1919"
-  // "Av. Santa Fe 3450"
-  // "Carlos Pellegrini 1023 1°B"
   const regex = /^([A-Za-zÁÉÍÓÚÜÑáéíóúüñ.'º°\- ]+)\s+(\d+.*)$/;
 
   return regex.test(direccion.trim());
@@ -33,12 +29,9 @@ const validarDireccionBasica = (direccion) => {
 const validarDireccionBuenosAires = (direccion) => {
   if (!direccion) return false;
 
-  // 1) Primero: validar calle + altura
   if (!validarDireccionBasica(direccion)) {
     return false;
   }
-
-  // 2) Después: chequear que el texto incluya algo que indique Buenos Aires
   const normalizada = direccion
     .toLowerCase()
     .normalize("NFD")
@@ -221,14 +214,14 @@ export default function ProfileScreen() {
                 onChangeText={(t) => setDraft({ ...draft, telefono: t })}
               />
               <TextInput
-  style={styles.input}
-  placeholder='Dirección (Ej: Juncal 1919, CABA)'
-  value={draft?.direccion || ""}
-  onChangeText={(d) => setDraft({ ...draft, direccion: d })}
-/>
-<Text style={styles.helperText}>
-  Incluí la ciudad. Ej: "Juncal 1919, CABA".
-</Text>
+                style={styles.input}
+                placeholder='Dirección (Ej: Juncal 1919, CABA)'
+                value={draft?.direccion || ""}
+                onChangeText={(d) => setDraft({ ...draft, direccion: d })}
+              />
+              <Text style={styles.helperText}>
+                Incluí la ciudad. Ej: "Juncal 1919, CABA".
+              </Text>
             </>
           ) : (
             <>
@@ -462,9 +455,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   helperText: {
-  width: "100%",
-  fontSize: 12,
-  color: "#777",
-  marginTop: 4,
-},
+    width: "100%",
+    fontSize: 12,
+    color: "#777",
+    marginTop: 4,
+  },
 });
