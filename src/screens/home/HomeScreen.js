@@ -18,6 +18,7 @@ import {
   getClassesByName,
   getClassesByDate,
 } from "../../services/classService";
+import { getCupos } from "../../services/cuposService";
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -83,7 +84,27 @@ export default function HomeScreen() {
       else if (date) results = await getClassesByDate(date);
       else results = await getClassList();
 
-      setClasses(results);
+      // Cargar cupos reales para cada clase filtrada
+      const resultsWithCupos = await Promise.all(
+        results.map(async (course) => {
+          try {
+            const cupos = await getCupos(course.id);
+            return {
+              ...course,
+              capacity: cupos.capacity,
+              currentEnrollment: cupos.currentEnrollment,
+            };
+          } catch {
+            return {
+              ...course,
+              capacity: 20,
+              currentEnrollment: 0,
+            };
+          }
+        })
+      );
+
+      setClasses(resultsWithCupos);
     } catch (err) {
       console.log("❌ Error al filtrar:", err);
       setError("No se pudieron cargar las clases filtradas");
@@ -99,12 +120,34 @@ export default function HomeScreen() {
     try {
       setLoading(true);
       const data = await getClassList();
-      setClasses(data);
+      
+      // Cargar cupos reales para cada clase
+      const dataWithCupos = await Promise.all(
+        data.map(async (course) => {
+          try {
+            const cupos = await getCupos(course.id);
+            return {
+              ...course,
+              capacity: cupos.capacity,
+              currentEnrollment: cupos.currentEnrollment,
+            };
+          } catch {
+            // Si falla, usar valores por defecto
+            return {
+              ...course,
+              capacity: 20,
+              currentEnrollment: 0,
+            };
+          }
+        })
+      );
+      
+      setClasses(dataWithCupos);
 
       // Extraer listas dinámicas (como Android)
-      setAvailableBranches(extractUniqueBranches(data));
-      setAvailableDisciplines(extractUniqueDisciplines(data));
-      setAvailableDates(extractUniqueDates(data));
+      setAvailableBranches(extractUniqueBranches(dataWithCupos));
+      setAvailableDisciplines(extractUniqueDisciplines(dataWithCupos));
+      setAvailableDates(extractUniqueDates(dataWithCupos));
 
     } catch (err) {
       console.error(err);
