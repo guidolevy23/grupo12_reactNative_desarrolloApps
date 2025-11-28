@@ -7,12 +7,12 @@ const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
 
 const processNotifications = async () => {
     const notifications = await NotificationService.getAll();
-    notifications.forEach(async ({ id, title, body}) => {
+    notifications.forEach(async ({ id, title, body, url}) => {
         await Notifications.scheduleNotificationAsync({
             content: {
                 title: title,
                 body: body,
-                data: { timestamp: Date.now() },
+                data: { timestamp: Date.now(), url },
             },
             trigger: null, // Send immediately
         });

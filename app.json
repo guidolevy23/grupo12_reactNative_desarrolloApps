@@ -16,13 +16,24 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.ritmofitapp"
     },
+    "scheme": "myapp",
+    "deeplink": true,
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.ritmofitapp"
+      "package": "com.anonymous.ritmofitapp",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            { "scheme": "myapp" }
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

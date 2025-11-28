@@ -10,6 +10,8 @@ import * as TaskManager from "expo-task-manager";
 import { BACKGROUND_NOTIFICATION_TASK } from "./src/services/notificationBackgroudTask";
 import { useEffect } from "react";
 import { Platform } from "react-native";
+import linking from "./src/utils/linking";
+import * as Linking from 'expo-linking';
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -28,7 +30,7 @@ function AppContent() {
     <PaperProvider theme={theme}>
       <SafeAreaProvider>
         <AuthProvider>
-          <NavigationContainer>
+          <NavigationContainer linking={linking}>
             <RootNavigator />
           </NavigationContainer>
         </AuthProvider>
@@ -38,6 +40,20 @@ function AppContent() {
 }
 
 export default function App() {
+
+    useEffect(() => {
+      const sub = Notifications.addNotificationResponseReceivedListener(response => {
+        const url = response.notification.request.content.data?.url;
+        console.log(response.notification.request.content.data)
+        console.log(url)
+        if (url) {
+          Linking.openURL(url);  // 🔥 triggers your linking config
+        }
+      });
+
+      return () => sub.remove();
+    }, []);
+
     useEffect(() => {
     // Request notification permissions and register background task
     const setupNotificationsAndBackgroundTask = async () => {

@@ -12,6 +12,8 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "scheme": "myapp",
+    "deeplink": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.ritmofitapp"
