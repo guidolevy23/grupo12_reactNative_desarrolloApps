@@ -29,15 +29,17 @@ export default function ProfileScreen() {
   const { logout } = useContext(AuthContext);
 
   const AVATARS = [
-    "https://i.pravatar.cc/300?img=1",
-    "https://i.pravatar.cc/300?img=2",
-    "https://i.pravatar.cc/300?img=3",
-    "https://i.pravatar.cc/300?img=4",
-    "https://i.pravatar.cc/300?img=5",
-    "https://i.pravatar.cc/300?img=6",
-    "https://i.pravatar.cc/300?img=7",
-    "https://i.pravatar.cc/300?img=8",
-  ];
+  "https://robohash.org/user1.png",
+  "https://robohash.org/user2.png",
+  "https://robohash.org/user3.png",
+  "https://robohash.org/user4.png",
+  "https://robohash.org/user5.png",
+  "https://robohash.org/user6.png",
+  "https://robohash.org/user7.png",
+  "https://robohash.org/user8.png",
+  "https://robohash.org/user9.png",
+  "https://robohash.org/user10.png",
+];
   const meses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
   const calcularProximaClase = (reservas) => {
@@ -212,7 +214,7 @@ export default function ProfileScreen() {
                   {proximaClase.course.name}
                 </Text>
                 {/* ACA ME QUEDE, deberia ver como viene la sede en el proximaClase para mostrarlo */}
-                <TouchableOpacity onPress={() => openMapsByCoords(proximaClase.course.branch?.lat, proximaClase.course.branch?.lng)}>
+                <TouchableOpacity onPress={() => openMapsByCoords(proximaClase.course.branch?.lat, proximaClase.course.branch?.lng,user.direccion)}>
                   <Text style={[styles.statNumber, { textDecorationLine: "underline", color: "#3366ff" }]}>{proximaClase.course.branch.nombre}</Text>
                 </TouchableOpacity>
                 <Text style={styles.statNumber}>

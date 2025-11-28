@@ -11,7 +11,18 @@ import {
 } from "react-native";
 import { getNews } from "../../services/newsService";
 
-// 🔹 Card independiente, maneja el loading de SU imagen
+const MESES_CORTOS = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+
+const formatFechaCorta = (isoDate) => {
+  if (!isoDate) return "";
+  try {
+    const [anio, mes, dia] = isoDate.split("-"); // "2025-12-03"
+    return `${Number(dia)} ${MESES_CORTOS[Number(mes) - 1]} ${anio}`;
+  } catch {
+    return isoDate;
+  }
+};
+
 function NewsCard({ item, onPress }) {
   const [imageLoading, setImageLoading] = useState(true);
 
@@ -40,7 +51,8 @@ function NewsCard({ item, onPress }) {
         <Text style={[styles.badge, styles[item.tipo]]}>
           {item.tipo.toUpperCase()}
         </Text>
-        <Text style={styles.date}>{item.fecha}</Text>
+
+        <Text style={styles.date}>{formatFechaCorta(item.fecha)}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -179,7 +191,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
-  // 🔹 Contenedor de imagen para poder centrar el loader
   imageWrapper: {
     width: "100%",
     height: 180,
@@ -211,6 +222,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#444",
   },
+
   badge: {
     marginTop: 10,
     paddingHorizontal: 8,
