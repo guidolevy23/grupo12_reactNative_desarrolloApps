@@ -28,6 +28,8 @@ export default function HistoryScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [ratingModalVisible, setRatingModalVisible] = useState(false);
   const [selectedAsistenciaId, setSelectedAsistenciaId] = useState(null);
+  // Map asistenciaId -> courseId to maintain relationship after save
+  const [asistenciaToCourseMap, setAsistenciaToCourseMap] = useState({});
 
   const fetchHistory = async () => {
     try {
@@ -37,39 +39,65 @@ export default function HistoryScreen() {
         dateFilter.endDate
       );
       
+      console.log('📋 History data received:', data);
 
       // Fetch user's own calificaciones and merge them with history items
       let myCalificaciones = [];
       try {
         myCalificaciones = await CalificacionService.getMyRatings();
+        console.log('⭐ My calificaciones:', myCalificaciones);
       } catch (calErr) {
-        // ignore errors fetching user's calificaciones
+        console.log('⚠️ Error fetching calificaciones:', calErr.message);
       }
 
       const merged = data.map((item) => {
-        // Normalize possible turno id locations
-        const itemTurnoId = item.turnoId || item.turno?.id || null;
-        // Try to find a matching calificacion by various possibilities:
-        // - calificacion.turnoId === item.turnoId
-        // - calificacion.turnoId === item.id (some backends return turnoId while history item id is the asistencia id equal to turno)
-        // - calificacion.asistenciaId === item.id
-        const match = myCalificaciones.find((c) => {
-          const cTurno = c.turnoId || c.turnoId;
-          const cAsistencia = c.asistenciaId || c.asistenciaId;
+        console.log(`🔍 Checking item ${item.id}:`, {
+          itemId: item.id,
+          itemCourseName: item.courseName,
+          calificacionesCount: myCalificaciones.length
+        });
 
-          if (cTurno && itemTurnoId && Number(cTurno) === Number(itemTurnoId)) return true;
-          if (cTurno && item.id && Number(cTurno) === Number(item.id)) return true;
-          if (cAsistencia && item.id && Number(cAsistencia) === Number(item.id)) return true;
+        // Try to get courseId from our local map or from stored item data
+        const itemCourseId = item.courseId || asistenciaToCourseMap[item.id];
+
+        // Match calificacion with history item
+        const match = myCalificaciones.find((c) => {
+          const cCourseId = c.courseId || c.course_id;
+          
+          // Match by courseId if available
+          if (itemCourseId && cCourseId && Number(itemCourseId) === Number(cCourseId)) {
+            console.log(`  ✅ Match by courseId: ${itemCourseId} === ${cCourseId}`);
+            return true;
+          }
+          
           return false;
         });
 
         if (match) {
-          return { ...item, rating: match.estrellas || match.stars || match.rating, comment: match.comentario || match.comment };
+          console.log(`✅ Match found for item ${item.id}!`, match);
+          const courseId = match.course_id || match.courseId;
+          
+          // Update map for persistence
+          if (courseId && !asistenciaToCourseMap[item.id]) {
+            setAsistenciaToCourseMap(prev => ({
+              ...prev,
+              [item.id]: courseId
+            }));
+          }
+          
+          return { 
+            ...item, 
+            rating: match.estrellas || match.stars || match.rating, 
+            comment: match.comentario || match.comment,
+            courseId: courseId // Store for future matches
+          };
         }
 
+        console.log(`❌ No match for item ${item.id}`);
         return item;
       });
 
+      console.log('✨ Final merged history:', merged);
       setHistory(merged);
       setError(null);
     } catch (err) {
@@ -109,6 +137,12 @@ export default function HistoryScreen() {
 
   useEffect(() => {
     fetchHistory();
+  }, []);
+
+  useEffect(() => {
+    if (dateFilter.startDate || dateFilter.endDate) {
+      fetchHistory();
+    }
   }, [dateFilter]);
 
   const onRefresh = () => {
@@ -185,32 +219,37 @@ export default function HistoryScreen() {
               <Text style={styles.infoLabel}>👤 {professor}</Text>
             </View>
           )}
+        </View>
 
-          {/* Debug IDs to help differentiate items when backend returns similar course data */}
-          {(item.turnoId || item.courseId || item.id) && (
-            <View style={styles.infoRow}>
-              <Text style={[styles.infoLabel, styles.debugText]}>
-                {item.turnoId ? `turnoId: ${item.turnoId}` : ''} {item.courseId ? `courseId: ${item.courseId}` : ''} {item.id ? `asistenciaId: ${item.id}` : ''}
-              </Text>
+        {/* Rating Section */}
+        <View style={styles.ratingSeparator}>
+          {item.rating ? (
+            <View style={styles.ratingSection}>
+              <View style={styles.ratingHeader}>
+                <Text style={styles.ratingLabel}>Mi valoración:</Text>
+                <View style={styles.starsRow}>
+                  {[...Array(5)].map((_, index) => (
+                    <Text key={index} style={styles.starIcon}>
+                      {index < item.rating ? '⭐' : '☆'}
+                    </Text>
+                  ))}
+                </View>
+              </View>
+              {item.comment && (
+              <View style={styles.commentContainer}>
+                <Text style={styles.commentText}>💬 {item.comment}</Text>
+              </View>
+            )}
             </View>
-          )}
-
-          {item.comment && (
-            <View style={styles.commentContainer}>
-              <Text style={styles.commentText}>💬 {item.comment}</Text>
-            </View>
-          )}
-
-          {/* Botón para calificar si no está calificado */}
-          {!item.rating && (
+          ) : (
             <TouchableOpacity
-              style={{ marginTop: 10, alignSelf: 'flex-end' }}
+              style={styles.rateButton}
               onPress={() => {
                 setSelectedAsistenciaId(item.id);
                 setRatingModalVisible(true);
               }}
             >
-              <Text style={{ color: '#667eea', fontWeight: '700' }}>Calificar</Text>
+              <Text style={styles.rateButtonText}>⭐ Calificar clase</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -219,20 +258,34 @@ export default function HistoryScreen() {
   };
 
   const handleSavedRating = (resp) => {
-    // resp may contain { id, turnoId, estrellas, comentario } or similar
+    // resp contains: { id, course_id, estrellas, comentario }
     if (!resp) return;
 
-    setHistory((prev) => prev.map((h) => {
-      // Match by asistenciaId if available in resp, else by turnoId
-      const matchesByAsistencia = resp.asistenciaId && h.id && Number(resp.asistenciaId) === Number(h.id);
-      const hTurnoId = h.turnoId || h.turno?.id || h.turnoId;
-      const matchesByTurno = resp.turnoId && hTurnoId && Number(resp.turnoId) === Number(hTurnoId);
+    console.log('💾 Saved rating response:', resp);
 
-      if (matchesByAsistencia || matchesByTurno || (selectedAsistenciaId && h.id === selectedAsistenciaId)) {
-        return { ...h, rating: resp.estrellas || resp.stars || resp.rating, comment: resp.comentario || resp.comment };
+    // Save the mapping asistenciaId -> courseId
+    if (selectedAsistenciaId && resp.course_id) {
+      setAsistenciaToCourseMap(prev => ({
+        ...prev,
+        [selectedAsistenciaId]: resp.course_id
+      }));
+    }
+
+    setHistory((prev) => prev.map((h) => {
+      // Match by the selected asistenciaId
+      if (h.id === selectedAsistenciaId) {
+        console.log('✅ Updating history item:', h.id);
+        return {
+          ...h,
+          rating: resp.estrellas,
+          comment: resp.comentario,
+          courseId: resp.course_id // Store courseId for future matches
+        };
       }
       return h;
     }));
+    
+    setRatingModalVisible(false);
     setSelectedAsistenciaId(null);
   };
 
@@ -460,10 +513,36 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  ratingSeparator: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#e0e0e0",
+  },
+  ratingSection: {
+    gap: 8,
+  },
+  ratingHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  ratingLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+  },
+  starsRow: {
+    flexDirection: "row",
+    gap: 2,
+  },
+  starIcon: {
+    fontSize: 16,
+  },
   commentContainer: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: "#f9f9f9",
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: "#f8f9ff",
     borderRadius: 8,
     borderLeftWidth: 3,
     borderLeftColor: "#667eea",
@@ -471,7 +550,25 @@ const styles = StyleSheet.create({
   commentText: {
     fontSize: 13,
     color: "#555",
-    fontStyle: "italic",
+    lineHeight: 18,
+  },
+  rateButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: "#667eea",
+    borderRadius: 8,
+    alignItems: "center",
+    width: "100%",
+    shadowColor: "#667eea",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  rateButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
   },
   emptyContainer: {
     padding: 40,
